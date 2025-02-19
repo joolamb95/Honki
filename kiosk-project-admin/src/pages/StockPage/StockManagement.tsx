@@ -1,80 +1,59 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import '../../style/StockManagement.css';
 
 interface StockItem {
-    menuNo: string;
+    menuNo: number;
     menuName: string;
-    quantity: number;
-    paymentDate: string;
-    status: string;
+    stockQuantity: number;
+    stockLastUpdate: string;
+    stockStatus: string;
 }
 
 const StockManagement: React.FC = () => {
+    const [stocks, setStocks] = useState<StockItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCategory, setSearchCategory] = useState('전체');
-    const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 초기 재고 데이터
-    const initialStockData: StockItem[] = [
-        { menuNo: 'M001', menuName: '라면', quantity: 50, paymentDate: '2025-02-05', status: '배송중' },
-        { menuNo: 'M002', menuName: '김치찌개', quantity: 80, paymentDate: '-', status: '-' },
-        { menuNo: 'M003', menuName: '계란말이', quantity: 50, paymentDate: '-', status: '-' },
-        { menuNo: 'M004', menuName: '진로', quantity: 200, paymentDate: '2025-01-29', status: '-' },
-    ];
+    useEffect(() => {
+        fetchStocks();
+    }, []);
 
-    // localStorage에서 재고 데이터 가져오기
-    const savedStockData = localStorage.getItem('stockManagement');
-    const stockData: StockItem[] = savedStockData ? JSON.parse(savedStockData) : initialStockData;
-
-    // 처음 로드될 때 초기 데이터 저장
-    React.useEffect(() => {
-        if (!savedStockData) {
-            localStorage.setItem('stockManagement', JSON.stringify(initialStockData));
+    const fetchStocks = async () => {
+        try {
+            const response = await axios.get<StockItem[]>('http://localhost:8080/honki/stock', {
+            });
+            console.log('재고 목록:', response.data);
+            setStocks(response.data);
+        } catch (error) {
+            console.error('재고 조회 실패:', error);
+            setStocks([]);
         }
-    }, [savedStockData]);
-
-    // 검색 버튼 클릭 핸들러
-    const handleSearch = () => {
-        setAppliedSearchTerm(searchTerm);
     };
 
-    // 필터링된 데이터
-    const filteredData = useMemo(() => {
-        if (!appliedSearchTerm) return stockData;
+    const filteredStocks = stocks.filter(stock => {
+        if (!searchTerm) return true;
 
-        return stockData.filter((item: StockItem) => {
-            const searchLower = appliedSearchTerm.toLowerCase();
-
-            if (searchCategory === '전체') {
+        switch (searchCategory) {
+            case '메뉴 번호':
+                return stock.menuNo.toString().includes(searchTerm);
+            case '메뉴 이름':
+                return stock.menuName.toLowerCase().includes(searchTerm.toLowerCase());
+            case '결제 날짜':
+                return stock.stockLastUpdate.includes(searchTerm);
+            case '전체':
                 return (
-                    item.menuNo.toLowerCase().includes(searchLower) ||
-                    item.menuName.toLowerCase().includes(searchLower) ||
-                    item.paymentDate.toLowerCase().includes(searchLower)
+                    stock.menuNo.toString().includes(searchTerm) ||
+                    stock.menuName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    stock.stockLastUpdate.includes(searchTerm)
                 );
-            }
-
-            switch (searchCategory) {
-                case '메뉴 번호':
-                    return item.menuNo.toLowerCase().includes(searchLower);
-                case '메뉴 이름':
-                    return item.menuName.toLowerCase().includes(searchLower);
-                case '결제 날짜':
-                    return item.paymentDate.toLowerCase().includes(searchLower);
-                default:
-                    return true;
-            }
-        });
-    }, [appliedSearchTerm, searchCategory, stockData]);
-
-    // Enter 키 입력 시 검색 실행
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleSearch();
+            default:
+                return true;
         }
-    };
+    });
 
     return (
         <div className="stock-management">
@@ -117,10 +96,9 @@ const StockManagement: React.FC = () => {
                             type="text" 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyPress={handleKeyPress}
                             placeholder="검색어를 입력하세요"
                         />
-                        <button onClick={handleSearch}>검색</button>
+                        <button>검색</button>
                     </div>
                 </div>
             </div>
@@ -136,13 +114,13 @@ const StockManagement: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredData.map((item: StockItem, index: number) => (
-                        <tr key={index}>
-                            <td>{item.menuNo}</td>
-                            <td>{item.menuName}</td>
-                            <td>{item.quantity}</td>
-                            <td>{item.paymentDate}</td>
-                            <td>{item.status}</td>
+                    {filteredStocks.map((stock) => (
+                        <tr key={stock.menuNo}>
+                            <td>{stock.menuNo}</td>
+                            <td>{stock.menuName}</td>
+                            <td>{stock.stockQuantity}</td>
+                            <td>{stock.stockLastUpdate}</td>
+                            <td>{stock.stockStatus || '-'}</td>
                         </tr>
                     ))}
                 </tbody>
