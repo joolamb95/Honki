@@ -1,0 +1,131 @@
+.date-section {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+}
+
+.date-label {
+    min-width: 80px;
+    color: #666;
+}
+
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-inputs input[type="datetime-local"] {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* 메뉴 아이템 스타일 */
+.menu-item {
+    margin-bottom: 5px;
+}
+
+.menu-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 메뉴 이름 스타일 */
+.menu-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* 메뉴 옵션 스타일 */
+.menu-option {
+    font-size: 12px;
+    color: #666;
+    margin-left: 10px;
+}
+
+/* 수량 스타일 */
+.menu-quantity {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.menu-quantity:last-child {
+    margin-bottom: 0;
+}
+
+/* 테이블 셀 수직 정렬 */
+td {
+    vertical-align: middle;
+}
+
+/* 메뉴/옵션이 있는 셀 */
+td .menu-item {
+    text-align: left;
+}
+
+/* 주문내역 테이블 기본 스타일 */
+.details-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.details-table th,
+.details-table td {
+    padding: 12px 8px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 주문내역 테이블 열 너비 */
+.details-table th:nth-child(1), /* 주문 번호 */
+.details-table td:nth-child(1) {
+    width: 10%;
+    min-width: 80px;
+}
+
+.details-table th:nth-child(2), /* 테이블 번호 */
+.details-table td:nth-child(2) {
+    width: 15%;
+    min-width: 80px;
+}
+
+.details-table th:nth-child(3), /* 주문 메뉴 */
+.details-table td:nth-child(3) {
+    width: 12%;
+    min-width: 90px;
+}
+
+.details-table th:nth-child(4), /* 메뉴 수 */
+.details-table td:nth-child(4) {
+    width: 8%;
+    min-width: 60px;
+}
+
+.details-table th:nth-child(5), /* 옵션 */
+.details-table td:nth-child(5) {
+    width: 12%;
+    min-width: 80px;
+}
+
+.details-table th:nth-child(6), /* 옵션 수 */
+.details-table td:nth-child(6) {
+    width: 8%;
+    min-width: 60px;
+}
+
+.details-table th:nth-child(7), /* 결제 금액 */
+.details-table td:nth-child(7) {
+    width: 15%;
+    min-width: 100px;
+}
+
+.details-table th:nth-child(8), /* 주문 시간 */
+.details-table td:nth-child(8) {
+    width: 20%;
+    min-width: 150px;
+}
