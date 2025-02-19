@@ -1,0 +1,69 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.order-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    text-align: center;
+}
+
+.order-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+.order-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.order-text {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.order-detail {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.order-items {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.order-item {
+    font-size: 16px;
+}
+
+.order-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.order-btn:hover {
+    background: #218838;
+}

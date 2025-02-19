@@ -1,0 +1,146 @@
+.menu-content {
+  position: relative; /* ✅ absolute 대신 relative 사용 */
+ top: 20px;
+ left: 260px;
+ width: calc(100% - 260px);
+ height: calc(100% - 40px);
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: flex-start;
+ padding: 20px;
+ overflow-y: auto;
+ overflow-x: hidden;
+ max-height: 100vh;
+ scrollbar-width: thin;
+ scrollbar-color: #a86d4b rgba(0, 0, 0, 0.3);
+
+}
+
+/* ✅ 메뉴 리스트 제목 */
+.menu-title {
+ color: #ffdd99;
+ font-size: 32px;
+ font-weight: bold;
+ text-align: center;
+ text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+ 
+
+}
+
+/* ✅ 메뉴 리스트 (한 줄에 3개) */
+.menu-grid {
+ display: grid;
+ grid-template-columns: repeat(3, 1fr);
+ gap: 30px;
+ width: 100%;
+ max-width: 1200px;
+ justify-content: center;
+ margin-bottom: 40px;
+ padding-bottom: 20px;
+}
+
+/* ✅ 개별 메뉴 카드 */
+.menu-card {
+ background: rgba(20, 10, 5, 0.8);
+ border: 1px solid #cfa67c;
+ color: white;
+ border-radius: 10px;
+ padding: 10px;
+ text-align: center;
+ box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.3);
+ transition: transform 0.2s;
+ width: 200px;
+ height: 220px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: space-between;
+ padding: 15px;
+ margin: 30px;
+}
+
+/* ✅ 메뉴 카드 이미지 */
+.menu-img {
+ width: 100%;
+ height: 100%;
+
+}
+.menu-list {
+ display: flex;
+ flex-wrap: wrap;
+ 
+ align-items: center; /* ✅ 수직 정렬 */
+ gap: 20px;
+ width: 100%; /* ✅ 전체 너비 차지 */
+ max-width: 1200px; /* ✅ 카드 최대 정렬 너비 설정 */
+ margin: 80px; /* ✅ 중앙 정렬 */
+}
+
+/* ✅ 메뉴 이름 */
+.menu-name {
+ font-size: 16px;
+ font-weight: bold;
+ margin-bottom: 2px; /* ✅ 간격 최소화 */
+ color: #ffdd99;
+}
+
+/* ✅ 메뉴 가격 */
+.menu-price {
+ font-size: 18px;
+ font-weight: bold;
+ color: #ffd700; /* ✅ 골드 색상 */
+ margin-top: 0px; /* ✅ 위 간격 최소화 */
+}
+
+/* ✅ 컨테이너 내부에서 버튼 고정 */
+.bottom-buttons {
+ width: 30%;
+ position: fixed; /* 🔥 컨테이너 내부에서 절대 위치 */
+ bottom: 5%; /* 하단에서 20px 위 */
+ margin-left: 45%;
+ display: flex;
+ gap: 15px;
+ z-index: 10; /* 다른 요소 위에 표시 */
+}
+
+.bottom-button1,.bottom-button2{
+ background-color: #a86d4b;
+ color: white;
+ border-radius: 20px;
+}
+.bottom-button1:hover, .bottom-button2:hover {
+ background: #d0976f;
+ transform: scale(1.05);
+}
+
+/* ✅ 반응형 스타일 */
+@media screen and (max-width: 1200px) {
+ .sidebar {
+   width: 220px;
+ }
+
+ .menu-content {
+   left: 220px;
+   width: calc(100% - 220px);
+ }
+
+ .menu-grid {
+   grid-template-columns: repeat(2, 1fr);
+ }
+}
+
+@media screen and (max-width: 768px) {
+ .sidebar {
+   width: 180px;
+ }
+
+ .menu-content {
+   left: 180px;
+   width: calc(100% - 180px);
+ }
+
+ .menu-grid {
+   grid-template-columns: repeat(1, 1fr);
+ }
+}
