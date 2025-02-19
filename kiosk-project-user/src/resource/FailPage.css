@@ -1,0 +1,72 @@
+.fail-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* 어두운 배경 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .fail-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 400px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .fail-content img {
+    width: 80px;
+    margin-bottom: 10px;
+  }
+  
+  .fail-message {
+    font-size: 18px;
+    font-weight: bold;
+    color: #d9534f; /* 빨간색 */
+  }
+  
+  .fail-code {
+    font-size: 14px;
+    color: gray;
+    margin-bottom: 15px;
+  }
+  
+  .fail-timer {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+  }
+  
+  .fail-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .fail-btn {
+    width: 48%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .fail-btn.home {
+    background-color: #5cb85c;
+    color: white;
+  }
+  
+  .fail-btn.cart {
+    background-color: #f0ad4e;
+    color: white;
+  }
+  
+  .fail-btn:hover {
+    opacity: 0.8;
+  }
+  
