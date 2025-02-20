@@ -55,10 +55,14 @@ const StockOrder: React.FC = () => {
 
         try {
             for (const [menuNo, quantity] of orderedItems) {
+                const menuItem = stocks.find(stock => stock.menuNo === parseInt(menuNo));
+                if (!menuItem) continue;
+
                 await axios.post('http://localhost:8080/honki/stock/order', {
                     menuNo: parseInt(menuNo),
+                    menuName: menuItem.menuName,
                     orderQuantity: quantity,
-                    orderAmount: quantity * 1000 // 임시 가격
+                    orderAmount: quantity * 1000
                 });
             }
             alert('재고 주문이 완료되었습니다.');

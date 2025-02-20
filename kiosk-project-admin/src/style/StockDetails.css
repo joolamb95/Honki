@@ -40,6 +40,13 @@
     font-weight: bold;
 }
 
+.order-tabs {
+    display: flex;
+    gap: 20px;
+    padding: 6.5px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
 .date-section {
     padding: 10px 20px;
     border-bottom: 1px solid #ddd;
@@ -101,46 +108,114 @@
 /* 재고내역 테이블 스타일 */
 .stock-details-table {
     width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
     background-color: white;
+    margin-top: 20px;
+    table-layout: fixed;
 }
 
 .stock-details-table th,
 .stock-details-table td {
+    border: 1px solid #ddd;
     padding: 12px 8px;
     text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    word-wrap: break-word;
+    white-space: normal;
+    height: auto;
+    vertical-align: middle;
 }
 
-.stock-details-table th:nth-child(1), /* 주문 번호 */
+.stock-details-table th:nth-child(1),
 .stock-details-table td:nth-child(1) {
-    width: 15%;
-    min-width: 100px;
+    width: 10%;
 }
 
-.stock-details-table th:nth-child(2), /* 메뉴 이름 */
+.stock-details-table th:nth-child(2),
 .stock-details-table td:nth-child(2) {
-    width: 20%;
-    min-width: 130px;
+    width: 12%;
 }
 
-.stock-details-table th:nth-child(3), /* 주문 수량 */
+.stock-details-table th:nth-child(3),
 .stock-details-table td:nth-child(3) {
-    width: 15%;
-    min-width: 90px;
+    width: 8%;
 }
 
-.stock-details-table th:nth-child(4), /* 결제 금액 */
+.stock-details-table th:nth-child(4),
 .stock-details-table td:nth-child(4) {
     width: 20%;
-    min-width: 120px;
 }
 
-.stock-details-table th:nth-child(5), /* 수량 */
+.stock-details-table th:nth-child(5),
 .stock-details-table td:nth-child(5) {
     width: 10%;
-    min-width: 160px;
+}
+
+.stock-details-table th:nth-child(6),
+.stock-details-table td:nth-child(6) {
+    width: 10%;
+}
+
+.stock-details-table th:nth-child(7),
+.stock-details-table td:nth-child(7) {
+    width: 15%;
+}
+
+.stock-details-table th:nth-child(8),
+.stock-details-table td:nth-child(8) {
+    width: 15%;
+}
+
+/* 관리 열 버튼 크기 줄이기 */
+.button-menu .approve-button {
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+}
+
+.button-menu .approve-button:hover {
+    background-color: #0056b3;
+}
+
+.button-menu .cancel-button2 {
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button-menu .cancel-button2:hover {
+    background-color: #a71d2a;
+}
+
+.button-menu {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+
+.stock-details-table thead th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    padding: 15px 8px;
+}
+
+.stock-details-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.stock-details-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.stock-details-table tbody tr:hover {
+    background-color: #edf2f7;
 } 
