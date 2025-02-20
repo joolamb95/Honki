@@ -19,13 +19,18 @@ const StockManagement: React.FC = () => {
     const location = useLocation();
 
     useEffect(() => {
-        fetchStocks();
+        fetchStocks();  // 초기 로딩
+
+        // 5초마다 재고 목록 새로고침
+        const interval = setInterval(fetchStocks, 5000);
+
+        // 컴포넌트 언마운트 시 인터벌 정리
+        return () => clearInterval(interval);
     }, []);
 
     const fetchStocks = async () => {
         try {
-            const response = await axios.get<StockItem[]>('http://localhost:8080/honki/stock', {
-            });
+            const response = await axios.get<StockItem[]>('http://localhost:8080/honki/stock');
             console.log('재고 목록:', response.data);
             setStocks(response.data);
         } catch (error) {

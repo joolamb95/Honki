@@ -16,6 +16,89 @@
 			ORDER BY
 				S.MENU_NO ASC
 		</select>
+		
+		<insert id="orderStock" parameterType="stockOrder">
+			INSERT INTO STOCK_ORDER (
+				ORDER_ID,
+				ORDER_DATE,
+				MENU_NO,
+				ORDER_QUANTITY,
+				ORDER_AMOUNT,
+				STATUS
+			) VALUES (
+				(SELECT NVL(MAX(ORDER_ID), 0) + 1 FROM STOCK_ORDER),
+				SYSDATE,
+				#{menuNo},
+				#{orderQuantity},
+				#{orderAmount},
+				'POSTPONE'
+			)
+		</insert>
+		
+		<update id="updateStockQuantity" parameterType="stock">
+			UPDATE STOCK 
+			SET 
+				STOCK_QUANTITY = STOCK_QUANTITY + #{stockQuantity},
+				STOCK_LAST_UPDATE = SYSDATE
+			WHERE 
+				MENU_NO = #{menuNo}
+		</update>
+		
+		<select id="getPostponeOrders" resultType="stockOrder">
+			SELECT
+				o.ORDER_ID as orderId,
+				o.MENU_NO as menuNo,
+				m.MENU_NAME as menuName,
+				o.ORDER_QUANTITY as orderQuantity,
+				o.ORDER_AMOUNT as orderAmount,
+				o.ORDER_DATE as orderDate,
+				o.STATUS as status
+			FROM STOCK_ORDER o
+			JOIN MENU m ON o.MENU_NO = m.MENU_NO
+			WHERE o.STATUS = 'POSTPONE'
+			ORDER BY o.ORDER_DATE DESC
+		</select>
+		
+		<select id="getOrderHistory" resultType="stockOrder">
+			SELECT 
+				o.ORDER_ID as orderId,
+				o.ORDER_DATE as orderDate,
+				o.MENU_NO as menuNo,
+				m.MENU_NAME as menuName,
+				s.STOCK_QUANTITY as stockQuantity,
+				o.ORDER_QUANTITY as orderQuantity,
+				o.ORDER_AMOUNT as orderAmount,
+				o.STATUS as status
+			FROM STOCK_ORDER o
+			JOIN MENU m ON o.MENU_NO = m.MENU_NO
+			JOIN STOCK s ON o.MENU_NO = s.MENU_NO
+			WHERE o.STATUS = 'COMPLETED'
+			ORDER BY o.ORDER_DATE DESC
+		</select>
+		
+		<select id="approveOrder" resultType="stockOrder">
+			SELECT
+				o.ORDER_ID as orderId,
+				o.MENU_NO as menuNo,
+				m.MENU_NAME as menuName,
+				o.ORDER_QUANTITY as orderQuantity,
+				o.ORDER_AMOUNT as orderAmount,
+				o.ORDER_DATE as orderDate
+			FROM STOCK_ORDER o
+			JOIN MENU m ON o.MENU_NO = m.MENU_NO
+			WHERE o.ORDER_ID = #{orderId}
+		</select>
+		
+		<update id="updateOrderStatus">
+			UPDATE STOCK_ORDER 
+			SET STATUS = 'COMPLETED'
+			WHERE ORDER_ID = #{orderId}
+		</update>
+		
+		<delete id="deleteOrder">
+			DELETE FROM STOCK_ORDER
+			WHERE ORDER_ID = #{orderId}
+		</delete>
 </mapper>
 
 
