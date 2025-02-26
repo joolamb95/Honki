@@ -1,0 +1,116 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="EmployeeMapper">
+
+
+<resultMap id="EmployeeResult" type="employee">
+    <id property="employeeNo" column="EMPLOYEE_NO"/>
+    <result property="name" column="NAME"/>
+    <result property="birthDate" column="BIRTH_DATE"/>
+    <result property="gender" column="GENDER"/>
+    <result property="phone" column="PHONE"/>
+    <result property="address" column="ADDRESS"/>
+    <result property="hireDate" column="HIRE_DATE"/>
+    <result property="resignDate" column="RESIGN_DATE"/>
+    <result property="employeeStatus" column="EMPLOYEE_STATUS"/>
+    <result property="lastUpdate" column="LAST_UPDATE"/>
+    <association property="salary" resultMap="EmployeeSalaryResultMap"/>
+</resultMap>
+<resultMap id="EmployeeSalaryResultMap" type="payroll">
+        <id property="employeeNo" column="EMPLOYEE_NO"/>
+        <result property="jobTitle" column="JOB_TITLE"/>
+        <result property="baseSalary" column="BASE_SALARY"/>
+        <result property="bonus" column="BONUS"/>
+        <result property="totalSalary" column="TOTAL_SALARY"/>
+        <result property="lastUpdate" column="LAST_UPDATE"/>
+        <result property="paymentDate" column="PAYMENT_DATE"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="EmployeeResult">
+    SELECT E.EMPLOYEE_NO, E.NAME, E.BIRTH_DATE, E.GENDER, E.PHONE, E.ADDRESS, 
+           E.HIRE_DATE, E.RESIGN_DATE, E.EMPLOYEE_STATUS, E.LAST_UPDATE,
+           S.JOB_TITLE, S.BASE_SALARY, S.BONUS, S.TOTAL_SALARY, S.LAST_UPDATE AS SALARY_LAST_UPDATE, S.PAYMENT_DATE
+    FROM EMPLOYEE E
+    LEFT JOIN EMPLOYEE_SALARY S ON E.EMPLOYEE_NO = S.EMPLOYEE_NO
+</select>
+
+
+	
+	<insert id="insertEmployee">
+	    INSERT INTO EMPLOYEE (EMPLOYEE_NO, NAME, BIRTH_DATE, GENDER, PHONE, ADDRESS, HIRE_DATE, EMPLOYEE_STATUS)
+	    VALUES (SEQ_EMPLOYEE_NO.NEXTVAL, #{name}, #{birthDate}, #{gender}, #{phone}, #{address}, #{hireDate}, #{employeeStatus})
+	</insert>
+	
+	<select id="getGeneratedEmployeeId" resultType="int">
+	    SELECT SEQ_EMPLOYEE_NO.CURRVAL FROM DUAL
+	</select>
+
+
+
+<insert id="insertEmployeeSalary">
+    INSERT INTO EMPLOYEE_SALARY (EMPLOYEE_NO, JOB_TITLE, BASE_SALARY, BONUS, TOTAL_SALARY, LAST_UPDATE, PAYMENT_DATE)
+    VALUES (#{employeeNo}, #{salary.jobTitle}, #{salary.baseSalary}, #{salary.bonus}, #{salary.totalSalary}, SYSDATE, #{salary.paymentDate})
+</insert>
+
+
+
+
+    <update id="updateEmployee">
+    UPDATE EMPLOYEE  
+    SET NAME = #{name},
+        PHONE = #{phone},
+        HIRE_DATE = #{hireDate},
+        RESIGN_DATE = #{resignDate},
+        EMPLOYEE_STATUS = #{employeeStatus},
+        BIRTH_DATE = #{birthDate},
+        GENDER = #{gender},
+        ADDRESS = #{address},
+        LAST_UPDATE = SYSDATE  
+    WHERE EMPLOYEE_NO = #{employeeNo}
+</update>
+
+	<update id="updateEmployeeSalary">
+    UPDATE EMPLOYEE_SALARY
+    SET JOB_TITLE = #{salary.jobTitle},
+        BASE_SALARY = #{salary.baseSalary},
+        BONUS = #{salary.bonus},
+        TOTAL_SALARY = #{salary.totalSalary},
+        LAST_UPDATE = SYSDATE,
+        PAYMENT_DATE = #{salary.paymentDate}
+    WHERE EMPLOYEE_NO = #{employeeNo}
+</update>
+
+
+	<select id="countEmployeeSalary" resultType="int">
+    SELECT COUNT(*) FROM EMPLOYEE_SALARY WHERE EMPLOYEE_NO = #{employeeNo}
+	</select>
+
+
+
+
+   <!-- ✅ 급여 데이터 먼저 삭제 -->
+<delete id="deleteEmployeeSalary">
+    DELETE FROM EMPLOYEE_SALARY WHERE EMPLOYEE_NO=#{employeeNo}
+</delete>
+
+<!-- ✅ 사원 데이터 삭제 -->
+<delete id="deleteEmployee">
+    DELETE FROM EMPLOYEE WHERE EMPLOYEE_NO=#{employeeNo}
+</delete>
+
+
+    
+    <select id="findById" resultMap="EmployeeResult">
+    SELECT E.EMPLOYEE_NO, E.NAME, E.BIRTH_DATE, E.GENDER, E.PHONE, E.ADDRESS, 
+           E.HIRE_DATE, E.RESIGN_DATE, E.EMPLOYEE_STATUS, E.LAST_UPDATE,
+           S.JOB_TITLE, S.BASE_SALARY, S.BONUS, S.TOTAL_SALARY, S.LAST_UPDATE AS SALARY_LAST_UPDATE, S.PAYMENT_DATE
+    FROM EMPLOYEE E
+    LEFT JOIN EMPLOYEE_SALARY S ON E.EMPLOYEE_NO = S.EMPLOYEE_NO
+    WHERE E.EMPLOYEE_NO = #{employeeNo}
+</select>
+	
+	
+
+
+</mapper>

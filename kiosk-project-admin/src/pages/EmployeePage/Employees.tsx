@@ -1,25 +1,31 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
+import axios from 'axios';
 
-// Employee 타입 정의
-export interface Employee {
-  id: string;
-  name: string;
-  position: string;
-  contact: string;
-  hireDate: string;
-  resignDate?: string; // 퇴사일
-  status: boolean;
-  birthDate?: string; // 생년월일
-  gender?: string; // 성별
-  email?: string;
-  address?: string;
-  basicSalary: number;
+// 급여 정보 타입
+export interface EmployeeSalary {
+  baseSalary: number;
   bonus: number;
   paymentDate: string;
   totalSalary: number;
-  lastUpdate?: string; // 최근 변경일
+  lastUpdate : Date;
+  jobTitle: string;
 }
 
+// Employee 타입 정의
+export interface Employee {
+  employeeNo: undefined;
+  name: string;
+  phone: string;
+  hireDate: string;
+  resignDate?: string;
+  employeeStatus: boolean;
+  birthDate?: string;
+  gender?: string;
+  email?: string;
+  address?: string;
+  lastUpdate?: Date;
+  salary: EmployeeSalary; // ✅ salary가 항상 존재하도록 설정
+}
 
 // EmployeeContext 타입 정의
 export interface EmployeeContextType {
@@ -31,32 +37,18 @@ export interface EmployeeContextType {
 export const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
 
 const EmployeesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: 's01',
-      name: '김지수',
-      position: '매니저',
-      contact: '010-1234-5678',
-      hireDate: '2024-09-21',
-      status: true,
-      basicSalary: 5500000,
-      bonus: 2500000,
-      paymentDate: '2025-02-10',
-      totalSalary: 8000000,
-    },
-    {
-      id: 's02',
-      name: '박민수',
-      position: '직원',
-      contact: '010-9876-5432',
-      hireDate: '2022-11-15',
-      status: false,
-      basicSalary: 4000000,
-      bonus: 1500000,
-      paymentDate: '2025-02-10',
-      totalSalary: 5500000,
-    },
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:8080/honki/api/employees')
+      .then((response) => {
+        console.log("🔹 사원 목록 응답 데이터:", response.data);
+        setEmployees(response.data);
+      })
+      .catch((error) => console.error('🚨 사원 목록 불러오기 실패:', error));
+}, []);
+
+
 
   return (
     <EmployeeContext.Provider value={{ employees, setEmployees }}>

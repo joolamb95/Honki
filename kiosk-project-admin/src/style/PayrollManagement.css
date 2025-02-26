@@ -296,9 +296,20 @@ table th:nth-child(3), table td:nth-child(3) {
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-
 .button-group .delete-button:hover {
     background-color: #a71d2a;
+}
+.button-group .edit-button1 {
+    background-color: #4caf50;
+    color: white;
+}
+
+.button-group button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 .payroll-table input {
     padding: 5px;
@@ -307,18 +318,8 @@ table th:nth-child(3), table td:nth-child(3) {
     width: 100%;
   }
   
-  .button-group button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
   
-  .edit-button {
-    background-color: #4caf50;
-    color: white;
-  }
+  
   
   .save-button {
     background-color: #2196f3;
