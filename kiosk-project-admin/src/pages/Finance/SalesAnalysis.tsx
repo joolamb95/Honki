@@ -1,108 +1,73 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
-import moment from "moment";
+import { RootState, AppDispatch } from "../../store";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchMonthlySales, fetchWeeklySales, fetchTopMenus, TopMenuCategory, MenuItem } from "../../slice/salesSlice";
 import "../../style/SalesAnalysis.css";
 import { useLocation, useNavigate } from "react-router-dom";
 
-
-/* npm install recharts moment */
-
 const SalesAnalysis: React.FC = () => {
-
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch<AppDispatch>();
 
-  const today = moment();
-  const currentMonth = today.format("YYYY-MM");
-  const lastWeekStart = today.subtract(7, "days").startOf("isoWeek");
-  const lastWeekEnd = lastWeekStart.clone().add(6, "days");
-
-  const daysInMonth = today.daysInMonth();
-
-  const generateMonthlySalesData = () => {
-    return Array.from({ length: daysInMonth }, (_, i) => ({
-      date: `${i + 1}일`,
-      sales: Math.floor(Math.random() * 900000),
-    }));
-  };
-
-  const generateWeeklySalesData = () => {
-    const daysOfWeek = ["월", "화", "수", "목", "금", "토", "일"];
-    return daysOfWeek.map((day) => ({
-      day,
-      earlySales: Math.floor(Math.random() * 20000),
-      lateSales: Math.floor(Math.random() * 20000),
-    }));
-  };
-
-  const [monthlySalesData, setMonthlySalesData] = useState(generateMonthlySalesData());
-  const [weeklySalesData, setWeeklySalesData] = useState(generateWeeklySalesData());
+  // ✅ Redux에서 데이터 가져오기
+  const { monthlySales, weeklySales, topMenus = [] } = useSelector((state: RootState) => state.sales);
 
   useEffect(() => {
-    const checkDateChange = setInterval(() => {
-      const newToday = moment();
-      if (newToday.format("YYYY-MM") !== currentMonth) {
-        setMonthlySalesData(generateMonthlySalesData());
-      }
-      if (newToday.isoWeek() !== today.isoWeek()) {
-        setWeeklySalesData(generateWeeklySalesData());
-      }
-    }, 60000*60); //매 1시간마다 변경
+    console.log("📌 Redux 상태 확인 - monthlySales:", monthlySales);
+    console.log("📌 Redux 상태 확인 - weeklySales:", weeklySales);
+    console.log("📌 Redux 상태 확인 - topMenus:", topMenus);
+  }, [monthlySales, weeklySales, topMenus]);
 
-    return () => clearInterval(checkDateChange);
-  }, []);
+  // ✅ API 호출 (현재 월과 주의 데이터를 자동으로 가져옴)
+  useEffect(() => {
+    const today = new Date();
+    const currentMonth = `${today.getFullYear()}-${('0' + (today.getMonth() + 1)).slice(-2)}`;
+    dispatch(fetchMonthlySales(currentMonth)); // 이번 달 매출 데이터 요청 (현재 월 자동 반영)
+    dispatch(fetchWeeklySales());  // 이번 주 매출 데이터 요청 (현재 주 자동 반영)
+    dispatch(fetchTopMenus());     // 인기 메뉴 데이터 요청
+  }, [dispatch]);
 
-  // 📌 카테고리별 매출 데이터 (하드코딩)
-  const categorySalesData = [
-    {
-      category: "주류",
-      icon: "🍾",
-      items: [
-        { id: 1, name: "진로", orders: 45, color: "bg-blue-400", barColor: "bg-blue-600" },
-        { id: 2, name: "참이슬", orders: 29, color: "bg-green-400", barColor: "bg-green-600" },
-        { id: 3, name: "와인", orders: 18, color: "bg-purple-400", barColor: "bg-purple-600" },
-        { id: 4, name: "막걸리", orders: 25, color: "bg-orange-400", barColor: "bg-orange-600" },
-      ],
-    },
-    {
-      category: "안주류",
-      icon: "🍗",
-      items: [
-        { id: 1, name: "안주1", orders: 45, color: "bg-blue-400", barColor: "bg-blue-600" },
-        { id: 2, name: "안주2", orders: 29, color: "bg-green-400", barColor: "bg-green-600" },
-        { id: 3, name: "안주3", orders: 18, color: "bg-purple-400", barColor: "bg-purple-600" },
-        { id: 4, name: "안주4", orders: 25, color: "bg-orange-400", barColor: "bg-orange-600" },
-      ],
-    },
-    {
-      category: "논알콜",
-      icon: "🥤",
-      items: [
-        { id: 1, name: "칵테일", orders: 45, color: "bg-blue-400", barColor: "bg-blue-600" },
-        { id: 2, name: "제로콜라", orders: 29, color: "bg-green-400", barColor: "bg-green-600" },
-        { id: 3, name: "사이다", orders: 18, color: "bg-purple-400", barColor: "bg-purple-600" },
-        { id: 4, name: "탄산수", orders: 25, color: "bg-orange-400", barColor: "bg-orange-600" },
-      ],
-    },
-  ];
+  // ✅ 카테고리 아이콘 설정
+  const categoryIcons: Record<string, string> = {
+    주류: "🍶",
+    안주류: "🍗",
+    논알콜: "🥤",
+  };
 
   return (
     <div className="salesAnalysis">
       <div className="nav-bar">
-      <button className={location.pathname === '/finance/dashboard' ? 'active' : ''}
-        onClick={() => navigate('/finance/dashboard')}>대시 보드</button>
-        <button className={location.pathname === '/finance/salesAnalysis' ? 'active' : ''}
-        onClick={() => navigate('/finance/salesAnalysis')}>매출 분석</button>
-        <button className={location.pathname === '/finance/expendManagement' ? 'active' : ''}
-        onClick={() => navigate('/finance/expendManagement')}>지출 관리</button>
+        <button
+          className={location.pathname === "/finance/dashboard" ? "active" : ""}
+          onClick={() => navigate("/finance/dashboard")}
+        >
+          대시 보드
+        </button>
+        <button
+          className={location.pathname === "/finance/salesAnalysis" ? "active" : ""}
+          onClick={() => navigate("/finance/salesAnalysis")}
+        >
+          매출 분석
+        </button>
+        <button
+          className={location.pathname === "/finance/expendManagement" ? "active" : ""}
+          onClick={() => navigate("/finance/expendManagement")}
+        >
+          지출 관리
+        </button>
       </div>
 
+      {/* 이번 달 매출 */}
       <div className="section1">
         <div className="section">
           <h2>이번달 매출</h2>
-          <div className="chart-container">
+          {monthlySales.length === 0 ? (
+            <p className="text-center text-gray-500">📌 데이터가 없습니다.</p>
+          ) : (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlySalesData}>
+              <BarChart data={monthlySales}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
@@ -110,56 +75,80 @@ const SalesAnalysis: React.FC = () => {
                 <Bar dataKey="sales" fill="#8884d8" name="월 매출" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          )}
         </div>
 
+        {/* 이번 주 매출 */}
         <div className="section">
-          <h2 className="text-xl font-bold text-indigo-900">최고 매출 시간대</h2>
-          <p className="text-gray-500">이번주({`${lastWeekStart.format("MM/DD")}~${lastWeekEnd.format("MM/DD")}) 주간 주문량`}</p>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={weeklySalesData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="earlySales" fill="#3498db" name="17:00~20:59" barSize={40} />
-                <Bar dataKey="lateSales" fill="#2ecc71" name="21:00~02:00" barSize={40} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <h2>이번 주 매출</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={weeklySales}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="earlySales" fill="#3498db" name="17:00~20:59" />
+              <Bar dataKey="lateSales" fill="#2ecc71" name="21:00~02:00" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
       {/* 📌 카테고리별 매출 섹션 */}
       <div className="section">
-        <h2 className="text-xl font-bold text-indigo-900">카테고리 별 매출</h2>
+        <h2>카테고리 별 매출</h2>
         <p className="text-gray-500">인기 메뉴</p>
-        
-         {/* ✅ 가로 정렬을 위해 flex-wrap 추가 */}
-        <div className="flex flex-wrap justify-center gap-6 mt-4">
-          {categorySalesData.map((categoryData) => (
-            <div key={categoryData.category} className="category-card">
-              <h3 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
-                {categoryData.icon} {categoryData.category}
-              </h3>
 
-              <div className="mt-2 space-y-2">
-                {categoryData.items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center border-b pb-2">
-                    <span className="text-gray-600 w-6">{item.id}</span>
-                    <span className="text-gray-800 flex-1">{item.name}</span>
-                    <span className="text-gray-800 w-10 text-right">{item.orders}</span>
-                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className={`h-2 ${item.barColor}`} style={{ width: `${item.orders}%` }}></div>
-                    </div>
+        {/* ✅ 데이터가 로드되지 않았을 경우 */}
+        {!topMenus || topMenus.length === 0 ? (
+          <p className="text-center text-gray-500">데이터가 없습니다.</p>
+        ) : (
+          <div className="flex flex-wrap justify-between gap-6 mt-4">
+            {topMenus.map((categoryData: TopMenuCategory) => {
+              const categoryName = categoryData.category ?? "기타";
+              const categoryIcon = categoryIcons[categoryName] ?? categoryIcons["기타"];
+
+              // ✅ 각 카테고리에서 가장 주문량이 높은 값 찾기 (width 비율 조정)
+              const maxOrders = categoryData.items.length > 0
+                ? Math.max(...categoryData.items.map((item: MenuItem) => item.ORDERS))
+                : 1; // maxOrders가 0이 되지 않도록 기본값 설정
+
+              return (
+                <div key={categoryData.category} className="category-card w-1/3 p-4 bg-white rounded-lg shadow-md">
+                  {/* ✅ 카테고리 제목 및 아이콘 */}
+                  <h3 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
+                    {categoryIcon} {categoryName}
+                  </h3>
+
+                  {/* ✅ 인기 메뉴 리스트 */}
+                  <div className="mt-2 space-y-2">
+                    {categoryData.items.map((item: MenuItem) => (
+                      <div key={item.id} className="flex justify-between items-center border-b pb-2">
+                        {/* 순위: ex) 1위, 2위, 3위 */}
+                        <span className="text-gray-600 w-6">{item.rank}위</span>
+                        
+                        {/* 메뉴 이름 */}
+                        <span className="text-gray-800 flex-1">{item.NAME}</span>
+                        
+                        {/* 주문 건수: ex) 10건 */}
+                        <span className="text-gray-800 w-10 text-right">{item.ORDERS}건</span>
+                        
+                        {/* 막대그래프 (가로 바) */}
+                        <div className="w-24 h-2 bg-gray-200 rounded-full ml-2">
+                          <div
+                            className="h-2 bg-blue-600"
+                            style={{ width: `${(item.ORDERS / maxOrders) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

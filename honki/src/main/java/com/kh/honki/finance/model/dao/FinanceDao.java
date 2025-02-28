@@ -1,6 +1,7 @@
 package com.kh.honki.finance.model.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
@@ -33,6 +34,18 @@ public class FinanceDao {
 
 	public List<String> getExpendsMonths() {
 		return session.selectList("finance.getExpendsMonths");
+	}
+
+	public List<Map<String, Object>> getMonthlySales(String yearMonth) {
+		return session.selectList("finance.getMonthlySales",yearMonth);
+	}
+
+	public List<Map<String, Object>> getWeeklySales() {
+		return session.selectList("finance.getWeeklySales");
+	}
+
+	public List<Map<String, Object>> getTopMenus() {
+		return session.selectList("finance.getTopMenus");
 	}
 	
 	

@@ -1,6 +1,7 @@
 /* 채팅 모달 전체 스타일 */
 .chat-modal {
     width: 400px;
+    max-height: 500px;
     background: white;
     border-radius: 8px;
     overflow: hidden;
