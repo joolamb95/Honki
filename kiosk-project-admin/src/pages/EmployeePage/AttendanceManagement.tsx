@@ -473,8 +473,8 @@ const AttendanceManagement: React.FC = () => {
 
       <table className="attendance-table">
         <thead>
-          <tr>
-            <th onClick={() => requestSort('employeeNo')}>사원번호</th>
+        <tr>
+            <th onClick={() => requestSort('employeeNo')}style={{ width: '50px' }}>사원번호</th>
             <th onClick={() => requestSort('name')} style={{ width: '100px' }}>
               이름
             </th>
@@ -482,13 +482,13 @@ const AttendanceManagement: React.FC = () => {
               직급
             </th>
             <th onClick={() => requestSort('workDate')}>근무날짜</th>
-            <th onClick={() => requestSort('clockIn')} style={{ width: '100px' }}>
+            <th onClick={() => requestSort('clockIn')} style={{ width: '130px' }}>
               출근시간
             </th>
-            <th onClick={() => requestSort('clockOut')} style={{ width: '100px' }}>
+            <th onClick={() => requestSort('clockOut')} style={{ width: '130px' }}>
               퇴근시간
             </th>
-            <th onClick={() => requestSort('workHours')}>근무시간</th>
+            <th onClick={() => requestSort('workHours')}style={{ width: '30x' }}>근무시간</th>
             <th>근무상태</th>
             <th>관리</th>
           </tr>
