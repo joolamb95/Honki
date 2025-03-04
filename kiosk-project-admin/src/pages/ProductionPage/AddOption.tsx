@@ -1,26 +1,14 @@
-import React, {useState } from 'react';
+import React, {useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../../style/AddOption.css';
+import axios from 'axios';
 
 interface Option {
     optionNo: number;          // MENU_NO
+    categoryNo: number;         // 카테고리 번호 추가
     optionName: string;        // MENU_NAME
     optionPrice: number;       // MENU_PRICE
 }
-
-interface OptionItem {
-    optionNo: string;          // MENU_NO
-    optionName: string;        // MENU_NAME
-    optionPrice: string;       // MENU_PRICE
-}
-
-// interface MenuItem {
-//     menuNo: string;
-//     categoryName: string;
-//     menuImg: string;
-//     menuName: string;
-//     menuPrice: string;
-// }
 
 const AddOption: React.FC = () => {
     const navigate = useNavigate();
@@ -28,80 +16,55 @@ const AddOption: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [optionToDelete, setOptionToDelete] = useState<string | null>(null);
-    const [optionList, setOptionList] = useState<OptionItem[]>([
-        { optionNo: 'P004', optionName: '당면사리', optionPrice: '2,900원' },
-        { optionNo: 'P003', optionName: '고기추가', optionPrice: '2,000원' },
-        { optionNo: 'P002', optionName: '계란', optionPrice: '500원' },
-        { optionNo: 'P001', optionName: '라면사리', optionPrice: '2,000원' },
-    ]);
+    const [optionList, setOptionList] = useState<Option[]>([]);
     
+    // 카테고리 목록
+    const categories = ['선택하세요', '사시미', '구이', '꼬치', '찜', '탕', '식사', '라멘', '튀김', '사이드', '음료/주류'];
+
     const [optionForm, setOptionForm] = useState<Option>({
         optionNo: 0,
+        categoryNo: 0,      // 카테고리 번호 초기값 추가
         optionName: '',
         optionPrice: 0
     });
     const [modifyModal, setModifyModal] = useState(false);
     const [modifyForm, setModifyForm] = useState<Option>({
         optionNo: 0,
+        categoryNo: 0,      // 카테고리 번호 초기값 추가
         optionName: '',
         optionPrice: 0
     });
 
-    // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const file = e.target.files?.[0];
-    //     if (file) {
-    //         const reader = new FileReader();
-    //         reader.onloadend = () => {
-    //             setMenuForm(prev => ({
-    //                 ...prev,
-    //                 menuImg: reader.result as string
-    //             }));
-    //         };
-    //         reader.readAsDataURL(file);
-    //     }
-    // };
+    // 초기 폼 상태 정의
+    const initialOptionForm: Option = {
+        optionNo: 0,
+        optionName: '',
+        optionPrice: 0,
+        categoryNo: 0
+    };
 
-    // const handleImageDelete = () => {
-    //     setMenuForm(prev => ({
-    //         ...prev,
-    //         menuImg: ''
-    //     }));
-    // };
+    // 폼 상태를 초기화하는 함수
+    const resetForm = () => {
+        setOptionForm({...initialOptionForm});
+    };
 
-    const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-
-        // 유효성 검사
-        if (!optionForm.optionName.trim()) {
-            alert('메뉴 이름을 입력해주세요.');
-            return;
-        }
-        if (optionForm.optionPrice <= 0) {
-            alert('메뉴 가격을 입력해주세요.');
-            return;
-        }
-
-        // 새로운 메뉴 번호 생성
-        const lastOptionNo = optionList[0]?.optionNo || 'P000';
-        const newOptionNo = `P${String(Number(lastOptionNo.slice(1)) + 1).padStart(3, '0')}`;
-
-        // 새로운 메뉴 아이템 생성
-        const newMenuItem: OptionItem = {
-            optionNo: newOptionNo,
-            optionName: optionForm.optionName,
-            optionPrice: `${optionForm.optionPrice.toLocaleString()}원`
-        };
-
-        // 메뉴 리스트 업데이트
-        setOptionList(prevList => [newMenuItem, ...prevList]);
-
-        // 초기화
-        setOptionForm({
-            optionNo: 0,
-            optionName: '',
-            optionPrice: 0
-        });
+    // 모달 닫기 함수 수정
+    const handleCloseModal = () => {
         setShowModal(false);
+        resetForm();  // 폼 초기화 추가
+    };
+
+    // 저장 후 모달 닫기 수정
+    const handleSubmit = async () => {
+        try {
+            await axios.post('http://localhost:8080/honki/menu/option/add', optionForm);
+            alert('옵션이 추가되었습니다.');
+            fetchOptionList();
+            handleCloseModal();  // 수정된 닫기 함수 사용
+        } catch (error) {
+            console.error('옵션 추가 실패:', error);
+            alert('옵션 추가에 실패했습니다.');
+        }
     };
 
     const handleDeleteClick = (optionNo: string) => {
@@ -109,51 +72,69 @@ const AddOption: React.FC = () => {
         setShowDeleteModal(true);
     };
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = async () => {
         if (optionToDelete) {
-            setOptionList(prevList => prevList.filter(option => option.optionNo !== optionToDelete));
-            setShowDeleteModal(false);
-            setOptionToDelete(null);
+            try {
+                const response = await axios.delete(`http://localhost:8080/honki/menu/option/delete/${optionToDelete}`);
+                if (response.status === 200) {
+                    alert('옵션이 삭제되었습니다.');
+                    setShowDeleteModal(false);
+                    setOptionToDelete(null);
+                    fetchOptionList(); // 옵션 목록 새로고침
+                }
+            } catch (error) {
+                console.error('옵션 삭제 실패:', error);
+                alert('옵션 삭제에 실패했습니다.');
+            }
         }
     };
 
     // 수정 버튼 클릭 시 호출되는 함수
-    const handleModifyClick = (option: OptionItem) => {
+    const handleModifyClick = (option: Option) => {
         setModifyForm({
-            optionNo: Number(option.optionNo.slice(1)), // 'P001' -> 1
+            optionNo: option.optionNo,
+            categoryNo: option.categoryNo,
             optionName: option.optionName,
-            optionPrice: Number(option.optionPrice.replace(/[^0-9]/g, '')) // '2,000원' -> 2000
+            optionPrice: option.optionPrice
         });
         setModifyModal(true);
     };
 
     // 수정 저장 버튼 클릭 시 호출되는 함수
-    const handleModifySubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleModifySubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
         if (!modifyForm.optionName.trim()) {
             alert('옵션 이름을 입력해주세요.');
             return;
         }
-        if (modifyForm.optionPrice <= 0) {
-            alert('옵션 가격을 입력해주세요.');
-            return;
-        }
 
-        // 옵션 리스트 업데이트
-        setOptionList(prevList => prevList.map(option => {
-            if (Number(option.optionNo.slice(1)) === modifyForm.optionNo) {
-                return {
-                    ...option,
-                    optionName: modifyForm.optionName,
-                    optionPrice: `${modifyForm.optionPrice.toLocaleString()}원`
-                };
+        try {
+            const response = await axios.put('http://localhost:8080/honki/menu/option/update', modifyForm);
+            if (response.status === 200) {
+                alert('옵션이 수정되었습니다.');
+                setModifyModal(false);
+                fetchOptionList(); // 옵션 목록 새로고침
             }
-            return option;
-        }));
-
-        setModifyModal(false);
+        } catch (error) {
+            console.error('옵션 수정 실패:', error);
+            alert('옵션 수정에 실패했습니다.');
+        }
     };
+
+    // API 연동을 위한 fetchOptionList 함수 추가
+    const fetchOptionList = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/honki/menu/option/list');
+            setOptionList(response.data);
+        } catch (error) {
+            console.error('옵션 목록 조회 실패:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchOptionList();
+    }, []);
 
     return (
         <div className="stock-management">
@@ -190,7 +171,7 @@ const AddOption: React.FC = () => {
                 <thead>
                     <tr>
                         <th>옵션 번호</th>
-                        {/* <th>카테고리 이름</th> */}
+                        <th>카테고리</th>
                         <th>옵션 이름</th>
                         <th>옵션 가격</th>
                         <th>수정/삭제</th>
@@ -200,8 +181,9 @@ const AddOption: React.FC = () => {
                     {optionList.map((option, index) => (
                         <tr key={index}>
                             <td>{option.optionNo}</td>
+                            <td>{categories[option.categoryNo]}</td>
                             <td>{option.optionName}</td>
-                            <td>{option.optionPrice}</td>
+                            <td>{option.optionPrice.toLocaleString()}원</td>
                             <td>
                                 <div className='button-menu'>
                                     <button 
@@ -212,7 +194,7 @@ const AddOption: React.FC = () => {
                                     </button>
                                     <button 
                                         className="delete-btn"
-                                        onClick={() => handleDeleteClick(option.optionNo)}
+                                        onClick={() => handleDeleteClick(option.optionNo.toString())}
                                     >
                                         삭제
                                     </button>
@@ -224,22 +206,22 @@ const AddOption: React.FC = () => {
             </table>
 
             {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+                <div className="modal-view">
+                    <div className="modal-box">
                         <div className="modal-header">
                             <h2>신규 옵션 추가</h2>
                             <button 
                                 type="button"
                                 className="close-btn" 
-                                onClick={() => setShowModal(false)}
+                                onClick={handleCloseModal}
                             >×</button>
                         </div>
                         <div className="modal-body">
-                            {/* <div className="form-group">
+                            <div className="form-group">
                                 <label>카테고리</label>
                                 <select
-                                    value={menuForm.categoryNo}
-                                    onChange={(e) => setMenuForm(prev => ({
+                                    value={optionForm.categoryNo}
+                                    onChange={(e) => setOptionForm(prev => ({
                                         ...prev,
                                         categoryNo: Number(e.target.value)
                                     }))}
@@ -250,7 +232,7 @@ const AddOption: React.FC = () => {
                                         </option>
                                     ))}
                                 </select>
-                            </div> */}
+                            </div>
                             <div className="form-group">
                                 <label>옵션 이름</label>
                                 <input 
@@ -293,14 +275,14 @@ const AddOption: React.FC = () => {
                                 className="submit-btn" 
                                 onClick={handleSubmit}
                             >
-                                추가
+                                저장
                             </button>
                             <button 
                                 type="button"
                                 className="cancel-btn" 
-                                onClick={() => setShowModal(false)}
+                                onClick={handleCloseModal}
                             >
-                                닫기
+                                취소
                             </button>
                         </div>
                     </div>
@@ -308,8 +290,8 @@ const AddOption: React.FC = () => {
             )}
 
             {showDeleteModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+                <div className="modal-view">
+                    <div className="modal-box">
                         <div className="modal-header">
                             <h2>옵션 삭제</h2>
                             <button 
@@ -350,7 +332,7 @@ const AddOption: React.FC = () => {
             {/* 수정 모달 추가 */}
             {modifyModal && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
+                    <div className="modal-box">
                         <div className="modal-header">
                             <h2>옵션 수정</h2>
                             <button 
@@ -360,6 +342,22 @@ const AddOption: React.FC = () => {
                             >×</button>
                         </div>
                         <div className="modal-body">
+                            <div className="form-group">
+                                <label>카테고리</label>
+                                <select
+                                    value={modifyForm.categoryNo}
+                                    onChange={(e) => setModifyForm(prev => ({
+                                        ...prev,
+                                        categoryNo: Number(e.target.value)
+                                    }))}
+                                >
+                                    {categories.map((category, index) => (
+                                        <option key={index} value={index}>
+                                            {category}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                             <div className="form-group">
                                 <label>옵션 이름</label>
                                 <input 

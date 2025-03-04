@@ -13,22 +13,18 @@
     background: rgba(255, 255, 255, 0.95);
     padding: 30px;
     border-radius: 12px;
-    width: 500px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     text-align: center;
     position: relative;
   }
-  /* :흰색_확인_표시: 개별 모달 크기 조정 */
-  .modal-content {
-    height: 300px;
-  }
+
   /* ✅ 채팅 모달 위치 조정 */
   .chat-modal {
     position: fixed;
     top: 30%; /* 기존보다 위로 조정 */
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 600px;
+    width: 650px;
     height: 500px;
     display: flex;
     flex-direction: column;
@@ -61,14 +57,15 @@
   .modal-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 30px;
     padding: 20px;
     justify-content: center;
+    height: 70%;
   }
   /* :흰색_확인_표시: 버튼 스타일 */
   .modal-button {
     width: 150px;
-    height: 60px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,13 +153,14 @@
   /* :흰색_확인_표시: 채팅 입력창 */
   .chat-input {
     display: flex;
+    
     align-items: center;
     gap: 10px;
     padding: 12px;
     background: white;
     border-top: 1px solid #ddd;
-    position: relative; /* ✅ 상대적 위치 조정 */
-    bottom: 0; /* ✅ 하단 고정 */
+    position:absolute; /* ✅ 상대적 위치 조정 */
+    
   }
   .chat-input input {
     flex: 1;
@@ -170,6 +168,7 @@
     font-size: 18px; /* 글자 크기 증가 */
     border: 1px solid #ccc;
     border-radius: 5px;
+    flex: 0 0 auto;
   }
   .chat-input button {
     padding: 12px;
@@ -179,6 +178,12 @@
     font-size: 16px;
     cursor: pointer;
   }
+
+  .chat-input-container {
+    flex: 0 0 auto;  /* 입력창 영역은 높이 고정 (내용만큼) */
+    /* 필요하면 border-top, background-color 등 스타일링 */
+  }
+
   /* :흰색_확인_표시: 숨김 처리 클래스 */
   .hidden {
     display: none;
@@ -239,10 +244,10 @@
   
   .keyboard-wrapper {
     position: fixed;
-    bottom: -60%;
+    bottom: 2%;
     left: 50%;
     transform: translateX(-50%);
-    width: 100vw; /* 화면 전체 폭 */
+    width: 1366px; /* 화면 전체 폭 */
     display: flex;
     justify-content: center;
     z-index: 999; /* ✅ 모달보다 아래에 있도록 설정 */

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AttendanceMapper">
+
+    <!-- 모든 근태 조회 -->
+   <select id="findAllAttendances" resultMap="AttendanceResult">
+    SELECT DISTINCT
+        A.ATTENDANCE_NO, 
+        A.EMPLOYEE_NO, 
+        E.NAME,  
+        S.JOB_TITLE,  
+        A.WORK_DATE, 
+        A.CLOCK_IN, 
+        A.CLOCK_OUT, 
+        A.WORK_HOURS, 
+        A.ABSENCE_STATUS
+    FROM ATTENDANCE A
+    LEFT JOIN EMPLOYEE E ON A.EMPLOYEE_NO = E.EMPLOYEE_NO
+    LEFT JOIN EMPLOYEE_SALARY S ON A.EMPLOYEE_NO = S.EMPLOYEE_NO
+</select>
+
+
+<resultMap id="AttendanceResult" type="attendance">
+    <id property="attendanceNo" column="ATTENDANCE_NO"/>
+    <result property="employeeNo" column="EMPLOYEE_NO"/>
+    <result property="name" column="NAME"/> <!-- ✅ 이름 매핑 -->
+    <result property="jobTitle" column="JOB_TITLE"/> <!-- ✅ 직급 매핑 -->
+    <result property="workDate" column="WORK_DATE"/>
+    <result property="clockIn" column="CLOCK_IN"/>
+    <result property="clockOut" column="CLOCK_OUT"/>
+    <result property="workHours" column="WORK_HOURS"/>
+    <result property="absenceStatus" column="ABSENCE_STATUS"/>
+</resultMap>
+
+
+
+
+    <!-- 특정 직원의 근태 조회 -->
+    <select id="findByEmployeeNo" parameterType="int" resultType="attendance">
+        SELECT * FROM attendance WHERE employee_no = #{employeeNo}
+    </select>
+
+   <insert id="insertAttendance" parameterType="attendance">
+    INSERT INTO attendance (attendance_no, employee_no, work_date, clock_in, clock_out, work_hours, absence_status)
+    VALUES (ATTENDANCE_SEQ.NEXTVAL, #{employeeNo}, #{workDate}, #{clockIn}, #{clockOut}, #{workHours}, #{absenceStatus})
+	</insert>
+
+
+    <update id="updateAttendance" parameterType="attendance">
+	    UPDATE attendance
+	    SET clock_in = #{clockIn}, 
+	        clock_out = #{clockOut}, 
+	        work_hours = #{workHours}, 
+	        absence_status = #{absenceStatus}
+	    WHERE attendance_no = #{attendanceNo}
+	</update>
+	<select id="findAttendanceByDate" resultType="attendance">
+    SELECT * FROM ATTENDANCE WHERE WORK_DATE = #{workDate}
+	</select>
+
+
+    <!-- 근태 데이터 삭제 -->
+    <delete id="deleteAttendance" parameterType="int">
+        DELETE FROM attendance WHERE attendance_no = #{attendanceNo}
+    </delete>
+
+</mapper>

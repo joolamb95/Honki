@@ -1,0 +1,80 @@
+/* 모달 스타일 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+  }
+  
+  /* ✅ 가로 스크롤 스타일 */
+  .ai-modal-list {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px;
+    list-style: none;
+    white-space: nowrap;
+  }
+  
+  /* 추천 메뉴 개별 아이템 */
+  .ai-modal-item {
+    flex: 0 0 auto;
+    width: 150px;
+    text-align: center;
+  }
+  
+  /* 추천 메뉴 이미지 */
+  .ai-modal-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  
+  /* 추천 메뉴명 */
+  .ai-modal-menu-name {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  /* 추천 메뉴 가격 */
+  .ai-modal-menu-price {
+    font-size: 14px;
+    color: #777;
+  }
+  
+  /* 추가 버튼 */
+  .ai-modal-button {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  /* 닫기 버튼 */
+  .ai-modal-close {
+    margin-top: 20px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  

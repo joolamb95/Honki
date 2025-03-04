@@ -1,7 +1,5 @@
 package com.kh.honki.stock.model.vo;
 
-import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +15,5 @@ public class Stock {
 	private int stockQuantity;
 	private String stockLastUpdate;
 	private String stockStatus;
+	private String stockType;  // 'M' 또는 'O'
 }

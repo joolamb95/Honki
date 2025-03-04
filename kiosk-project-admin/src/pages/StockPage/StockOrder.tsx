@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import '../../style/StockOrder.css';
@@ -8,25 +8,58 @@ interface StockItem {
     menuName: string;
     stockQuantity: number;
     stockLastUpdate: string;
-    stockStatus: string | null;
+    stockStatus: string;
+    stockType: 'M' | 'O';
+}
+
+interface MenuOption {
+    optionNo: number;
+    optionName: string;
+    optionPrice: number;
+    categoryNo: number;
+    stockQuantity: number;
 }
 
 interface OrderQuantity {
     [key: number]: number;
 }
 
+interface OrderData {
+    itemNo: number;
+    itemType: 'M' | 'O';
+    orderQuantity: number;
+    orderAmount: number;
+}
+
+interface StockOption {
+    optionNo: number;
+    optionName: string;
+    stockOptionQuantity: number;
+    stockOptionStatus: string;
+    stockOptionLastUpdate: string;
+}
+
 const StockOrder: React.FC = () => {
     const [stocks, setStocks] = useState<StockItem[]>([]);
+    const [options, setOptions] = useState<StockOption[]>([]);
+    const [orderType, setOrderType] = useState<'menu' | 'option'>('menu');
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCategory, setSearchCategory] = useState('전체');
-    const [orderQuantities, setOrderQuantities] = useState<OrderQuantity>({});
-    const [activeTab, setActiveTab] = useState<'menu' | 'option'>('menu');
+    const [menuOrderQuantities, setMenuOrderQuantities] = useState<OrderQuantity>({});
+    const [optionOrderQuantities, setOptionOrderQuantities] = useState<OrderQuantity>({});
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [quantity, setQuantity] = useState(1);
+    const [isOption, setIsOption] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
-        fetchStocks();
-    }, []);
+        if (orderType === 'menu') {
+            fetchStocks();
+        } else {
+            fetchStockOptions();
+        }
+    }, [orderType]);
 
     const fetchStocks = async () => {
         try {
@@ -38,35 +71,68 @@ const StockOrder: React.FC = () => {
         }
     };
 
-    const handleQuantityChange = (menuNo: number, value: number) => {
-        setOrderQuantities(prev => ({
-            ...prev,
-            [menuNo]: value
-        }));
+    const fetchStockOptions = async () => {
+        try {
+            const response = await axios.get<StockOption[]>('http://localhost:8080/honki/stock/options');
+            if (Array.isArray(response.data)) {
+                setOptions(response.data);
+            } else {
+                console.error('옵션 재고 데이터가 배열 형식이 아닙니다:', response.data);
+                setOptions([]);
+            }
+        } catch (error) {
+            console.error('옵션 재고 목록 조회 실패:', error);
+            setOptions([]);
+        }
+    };
+
+    const handleQuantityChange = (id: number, value: number) => {
+        if (orderType === 'menu') {
+            setMenuOrderQuantities(prev => ({
+                ...prev,
+                [id]: value
+            }));
+        } else {
+            setOptionOrderQuantities(prev => ({
+                ...prev,
+                [id]: value
+            }));
+        }
     };
 
     const handleOrder = async () => {
-        const orderedItems = Object.entries(orderQuantities).filter(([_, quantity]) => quantity > 0);
-        
+        const orderedItems = orderType === 'menu' 
+            ? Object.entries(menuOrderQuantities).filter(([_, qty]) => qty > 0)
+            : Object.entries(optionOrderQuantities).filter(([_, qty]) => qty > 0);
+
         if (orderedItems.length === 0) {
             alert('주문할 수량을 입력해주세요.');
             return;
         }
 
         try {
-            for (const [menuNo, quantity] of orderedItems) {
-                await axios.post('http://localhost:8080/honki/stock/order', {
-                    menuNo: parseInt(menuNo),
+            for (const [itemNo, quantity] of orderedItems) {
+                const orderData = {
+                    itemNo: parseInt(itemNo),
+                    itemType: orderType === 'menu' ? 'M' : 'O',
                     orderQuantity: quantity,
-                    orderAmount: quantity * 1000 // 임시 가격
-                });
+                    orderAmount: quantity * 1000
+                };
+                await axios.post('http://localhost:8080/honki/stock/order', orderData);
             }
             alert('재고 주문이 완료되었습니다.');
-            setOrderQuantities({});
-            fetchStocks();
+            
+            // 주문 완료 후 수량 초기화
+            if (orderType === 'menu') {
+                setMenuOrderQuantities({});
+            } else {
+                setOptionOrderQuantities({});
+            }
+            
+            navigate('/stock/details');
         } catch (error) {
-            console.error('재고 주문 실패:', error);
-            alert('재고 주문에 실패했습니다.');
+            console.error('주문 실패:', error);
+            alert('주문에 실패했습니다.');
         }
     };
 
@@ -79,6 +145,58 @@ const StockOrder: React.FC = () => {
     const handleSearch = () => {
         // 검색 로직
     };
+
+    // 메뉴 필터링
+    const filteredStocks = useMemo(() => {
+        if (!Array.isArray(stocks)) return [];
+        
+        return stocks.filter(stock => {
+            if (!searchTerm) return true;
+
+            switch (searchCategory) {
+                case '메뉴 번호':
+                    return stock.menuNo.toString().includes(searchTerm);
+                case '메뉴 이름':
+                    return stock.menuName.toLowerCase().includes(searchTerm.toLowerCase());
+                case '결제 날짜':
+                    return stock.stockLastUpdate.includes(searchTerm);
+                case '전체':
+                    return (
+                        stock.menuNo.toString().includes(searchTerm) ||
+                        stock.menuName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        stock.stockLastUpdate.includes(searchTerm)
+                    );
+                default:
+                    return true;
+            }
+        });
+    }, [stocks, searchTerm, searchCategory]);
+
+    // 옵션 필터링
+    const filteredOptions = useMemo(() => {
+        if (!Array.isArray(options)) return [];
+        
+        return options.filter(option => {
+            if (!searchTerm) return true;
+
+            switch (searchCategory) {
+                case '옵션 번호':
+                    return option.optionNo.toString().includes(searchTerm);
+                case '옵션 이름':
+                    return option.optionName.toLowerCase().includes(searchTerm.toLowerCase());
+                case '결제 날짜':
+                    return option.stockOptionLastUpdate.includes(searchTerm);
+                case '전체':
+                    return (
+                        option.optionNo.toString().includes(searchTerm) ||
+                        option.optionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        option.stockOptionLastUpdate.includes(searchTerm)
+                    );
+                default:
+                    return true;
+            }
+        });
+    }, [options, searchTerm, searchCategory]);
 
     return (
         <div className="stock-management">
@@ -107,14 +225,14 @@ const StockOrder: React.FC = () => {
                 <div className="content-header">재고 주문</div>
                 <div className="order-tabs">
                     <button 
-                        className={`tab-button ${activeTab === 'menu' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('menu')}
+                        className={`tab-button ${orderType === 'menu' ? 'active' : ''}`}
+                        onClick={() => setOrderType('menu')}
                     >
                         메뉴 재고주문
                     </button>
                     <button 
-                        className={`tab-button ${activeTab === 'option' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('option')}
+                        className={`tab-button ${orderType === 'option' ? 'active' : ''}`}
+                        onClick={() => setOrderType('option')}
                     >
                         옵션 재고주문
                     </button>
@@ -128,8 +246,17 @@ const StockOrder: React.FC = () => {
                             onChange={(e) => setSearchCategory(e.target.value)}
                         >
                             <option>전체</option>
-                            <option>메뉴 번호</option>
-                            <option>메뉴 이름</option>
+                            {orderType === 'menu' ? (
+                                <>
+                                    <option>메뉴 번호</option>
+                                    <option>메뉴 이름</option>
+                                </>
+                            ) : (
+                                <>
+                                    <option>옵션 번호</option>
+                                    <option>옵션 이름</option>
+                                </>
+                            )}
                             <option>결제 날짜</option>
                         </select>
                         <input 
@@ -147,44 +274,55 @@ const StockOrder: React.FC = () => {
             <table className='order-table'>
                 <thead>
                     <tr>
-                        <th>메뉴 번호</th>
-                        <th>메뉴 이름</th>
+                        <th>{orderType === 'menu' ? '메뉴 번호' : '옵션 번호'}</th>
+                        <th>{orderType === 'menu' ? '메뉴 이름' : '옵션 이름'}</th>
                         <th>현재 수량</th>
                         <th>주문 수량</th>
                         <th>주문 금액</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {stocks.map((stock) => (
-                        <tr key={stock.menuNo}>
-                            <td>{stock.menuNo}</td>
-                            <td>{stock.menuName}</td>
-                            <td>{stock.stockQuantity}</td>
-                            <td>
-                                <input 
-                                    className="stock-modify" 
-                                    type="number" 
-                                    min={0}
-                                    value={orderQuantities[stock.menuNo] || ''}
-                                    onChange={(e) => handleQuantityChange(
-                                        stock.menuNo, 
-                                        parseInt(e.target.value) || 0
-                                    )}
-                                />
-                            </td>
-                            <td>
-                                {orderQuantities[stock.menuNo] 
-                                    ? `${(orderQuantities[stock.menuNo] * 1000).toLocaleString()}원` 
-                                    : '0원'}
-                            </td>
-                        </tr>
-                    ))}
+                    {orderType === 'menu' ? (
+                        filteredStocks.map((stock) => (
+                            <tr key={stock.menuNo}>
+                                <td>M{stock.menuNo}</td>
+                                <td>{stock.menuName}</td>
+                                <td>{stock.stockQuantity}</td>
+                                <td>
+                                    <input 
+                                        type="number"
+                                        min={0}
+                                        value={menuOrderQuantities[stock.menuNo] || ''}
+                                        onChange={(e) => handleQuantityChange(stock.menuNo, parseInt(e.target.value) || 0)}
+                                    />
+                                </td>
+                                <td>{menuOrderQuantities[stock.menuNo] ? `${(menuOrderQuantities[stock.menuNo] * 1000).toLocaleString()}원` : '0원'}</td>
+                            </tr>
+                        ))
+                    ) : (
+                        filteredOptions.map((option) => (
+                            <tr key={option.optionNo}>
+                                <td>O{option.optionNo}</td>
+                                <td>{option.optionName}</td>
+                                <td>{option.stockOptionQuantity}</td>
+                                <td>
+                                    <input 
+                                        type="number"
+                                        min={0}
+                                        value={optionOrderQuantities[option.optionNo] || ''}
+                                        onChange={(e) => handleQuantityChange(option.optionNo, parseInt(e.target.value) || 0)}
+                                    />
+                                </td>
+                                <td>{optionOrderQuantities[option.optionNo] ? `${(optionOrderQuantities[option.optionNo] * 1000).toLocaleString()}원` : '0원'}</td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
             
             <div className="button-container">
                 <button className="order-button" onClick={handleOrder}>
-                    메뉴 재고 주문
+                    주문
                 </button>
             </div>
         </div>

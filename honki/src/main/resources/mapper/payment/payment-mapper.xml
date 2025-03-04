@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="payment">
+
+	<insert id="insertPayment" parameterType="payment">
+		<selectKey keyProperty="paymentId" order="BEFORE" resultType="int">
+		SELECT SEQ_PAYMENT_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO PAYMENT (PAYMENT_ID, PAYMENT_METHOD, AMOUNT, STATUS) VALUES
+		(#{paymentId}, #{paymentMethod}, #{amount}, #{status}) </insert>
+
+
+	<select id="getLastPaymentId" resultType="int">
+		SELECT COALESCE(MAX(PAYMENT_ID), 0) FROM PAYMENT
+	</select>
+
+
+</mapper>

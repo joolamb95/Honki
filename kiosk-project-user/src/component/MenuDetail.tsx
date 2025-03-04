@@ -4,25 +4,47 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../features/cartSlice";
 import { Menu } from "../type/MenuType";
 import "../resource/MenuDetail.css";
-
+import "../component/TableManager";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const MenuDetail = () => {
-    const { menuNo } = useParams();
+    const { menuNo, tableNo } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [quantity, setQuantity] = useState(1);
-    const [selectedOptions, setSelectedOptions] = useState<{ name: string; price: number }[]>([]);
+    const [selectedOptions, setSelectedOptions] = useState<{ optionNo: number; name: string; price: number }[]>([]);
+    const [options, setOptions] = useState<{ optionNo: number; name: string; price: number }[]>([]);
+    const [selectedTable, setSelectedTable] = useState<number | null>(null);  // ✅ null로 초기화
+
     const [menu, setMenu] = useState<Menu | null>(null);
-    const [options, setOptions] = useState<{ name: string; price: number }[]>([]); // ✅ 옵션 리스트 상태 추가
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const storedTable = localStorage.getItem("currentTable");
+        const urlTable = tableNo ? parseInt(tableNo, 10) : null;
+      
+        if(urlTable){
+            console.log("📌 URL에서 가져온 테이블 번호:", urlTable);
+            localStorage.setItem("currentTable", urlTable.toString());
+            setSelectedTable(urlTable);
+        }else if(storedTable){
+            console.log("📌 기존 localStorage 테이블 번호 유지:", storedTable);
+            setSelectedTable(parseInt(storedTable, 10));
+        }else{
+            console.warn("❌ MenuDetail - 테이블 번호가 설정되지 않았습니다!");
+        }
+    }, [tableNo]); 
+    
+    
+ 
 
     // ✅ API에서 메뉴 정보 가져오기
     useEffect(() => {
         if (!menuNo) return;
 
         setLoading(true);
-        fetch(`http://localhost:8080/honki/api/menus/${menuNo}`)
+        fetch(` ${apiBaseUrl}/honki/api/menus/${menuNo}`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("상품을 찾을 수 없습니다.");
@@ -44,7 +66,7 @@ const MenuDetail = () => {
 
     // ✅ API에서 옵션 데이터 가져오기
     const fetchOptions = (categoryNo: number) => {
-        fetch(`http://localhost:8080/honki/api/options/${categoryNo}`)
+        fetch(` ${apiBaseUrl}/honki/api/options/${categoryNo}`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("옵션을 불러올 수 없습니다.");
@@ -52,14 +74,17 @@ const MenuDetail = () => {
                 return response.json();
             })
             .then((data) => {
-                console.log("옵션 데이터:", data);
-                setOptions(data.map((opt: any) => ({ name: opt.optionName, price: opt.optionPrice || 0 }))); // ✅ null 값 방지
+                console.log("📌 옵션 데이터:", data);
+                setOptions(data.map((opt: any) => ({
+                    optionNo: opt.optionNo, // ✅ 추가
+                    name: opt.optionName,
+                    price: opt.optionPrice || 0
+                })));
             })
             .catch((err) => {
-                console.error("옵션 데이터를 불러오는 중 오류 발생:", err);
+                console.error("❌ 옵션 데이터를 불러오는 중 오류 발생:", err);
             });
     };
-
     if (loading) {
         return <h2 className="menu-loading">⏳ 상품 정보를 불러오는 중...</h2>;
     }
@@ -69,9 +94,9 @@ const MenuDetail = () => {
     }
 
     // ✅ 옵션 선택 핸들러
-    const handleOptionChange = (option: { name: string; price: number }) => {
-        if (selectedOptions.find((o) => o.name === option.name)) {
-            setSelectedOptions(selectedOptions.filter((o) => o.name !== option.name));
+    const handleOptionChange = (option: { optionNo: number; name: string; price: number }) => {
+        if (selectedOptions.find((o) => o.optionNo === option.optionNo)) {
+            setSelectedOptions(selectedOptions.filter((o) => o.optionNo !== option.optionNo));
         } else {
             setSelectedOptions([...selectedOptions, option]);
         }
@@ -82,18 +107,36 @@ const MenuDetail = () => {
 
     // ✅ 장바구니 추가 핸들러
     const handleAddToCart = () => {
-        dispatch(addToCart({
-            ...menu,
-            quantity,
-            selectedOptions
-        }));
-        setShowModal(true);
-    };
+    const storedTable = localStorage.getItem("currentTable"); 
+    const tableNo = storedTable ? parseInt(storedTable, 10) : 1;  
+    console.log("📌 MenuDetail - 장바구니 추가 시 테이블 번호:", tableNo); // ✅ 여기서 확인
+
+    dispatch(addToCart({
+        ...menu,
+        quantity,
+        selectedOptions: selectedOptions.map(opt => ({
+            optionNo: opt.optionNo, 
+            name: opt.name,
+            price: opt.price
+        })),
+        tableNo // ✅ 올바르게 추가
+    }));
+    setShowModal(true);
+};
+
+    
+   
 
     return (
         <div className="menu-detail">
             <div className="menu-detail-card">
-                <img src={`http://localhost:8080/honki${menu.menuImg}`} alt={menu.menuName} className="menu-detail-img" />
+                <img
+                    src={menu.menuImg.startsWith("http") ? menu.menuImg : ` ${apiBaseUrl}/honki${menu.menuImg}`}
+                    alt={menu.menuName}
+                    className="menu-detail-img"
+                />
+
+
                 <h2 className="menu-detail-title">{menu.menuName}</h2>
                 <p className="menu-detail-price">{menu.menuPrice.toLocaleString()} 원</p>
 
@@ -111,7 +154,7 @@ const MenuDetail = () => {
                             </label>
                         ))
                     ) : (
-                        <p className="no-options">옵션이 없습니다.</p> // ✅ 옵션이 없을 경우 메시지 표시
+                        <p className="no-options"></p> // ✅ 옵션이 없을 경우 메시지 표시
                     )}
                 </div>
 
@@ -141,8 +184,14 @@ const MenuDetail = () => {
                         <h2 className="cart-modal-title">장바구니 추가 완료</h2>
                         <p className="cart-modal-message">{menu.menuName}이(가) 장바구니에 추가되었습니다.</p>
                         <div className="cart-modal-buttons">
-                            <button className="cart-modal-button main" onClick={() => navigate("/")}>메인으로 가기</button>
-                            <button className="cart-modal-button cart" onClick={() => navigate("/cart")}>장바구니 보기</button>
+                            <button
+                                className="cart-modal-button main"
+                                onClick={() => navigate(`/table/${selectedTable}`)} // 선택된 테이블 번호로 경로 이동
+                            >
+                                메인으로 가기
+                            </button>
+
+                            <button className="cart-modal-button cart" onClick={() => navigate("/cart/:tableNo")}>장바구니 보기</button>
                         </div>
                     </div>
                 </div>

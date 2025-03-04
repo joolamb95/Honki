@@ -1,93 +1,96 @@
-import React, { useState, useEffect } from "react";
-import SockJS from "sockjs-client";
+import React, { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
-
-type ChatProps = {
-    tableId: number;
-};
-
-const Chat: React.FC<ChatProps> = ({ tableId }) => {
-    const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [messages, setMessages] = useState<{ sender: string; content: string }[]>([]);
-    const [message, setMessage] = useState("");
-    const [username, setUsername] = useState("User");
-    const [isModalOpen, setIsModalOpen] = useState(false);  // ✅ 모달 상태 추가
-
-    useEffect(() => {
-        let client: Client | null = null;
-
-        const connectWebSocket = () => {
-            const socket = new SockJS("http://localhost:8080/honki/stompServer");
-            client = new Client({
-                webSocketFactory: () => socket,
-                reconnectDelay: 5000,
-                onConnect: () => {
-                    console.log(`✅ WebSocket 연결 성공! - Table ${tableId}`);
-
-                    client!.subscribe(`/topic/table/${tableId}`, (msg) => {
-                        const newMessage = JSON.parse(msg.body);
-                        setMessages((prev) => [...prev, newMessage]);
-                    });
-
-                    client!.publish({
-                        destination: "/app/chat.addUser",
-                        body: JSON.stringify({ sender: username, tableId, type: "JOIN" })
-                    });
-
-                    setStompClient(client);
-                },
-                onStompError: (frame) => {
-                    console.error("🚨 STOMP 프로토콜 에러:", frame);
-                    setTimeout(connectWebSocket, 5000);
-                },
-                onWebSocketClose: () => {
-                    console.warn("⚠️ WebSocket 연결 종료됨, 5초 후 재연결...");
-                    setTimeout(connectWebSocket, 5000);
-                }
-            });
-
-            client.activate();
-        };
-
-        connectWebSocket();
-
-        return () => {
-            if (client) {
-                client.deactivate();
-                setStompClient(null);
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store";
+import { setMessages, addMessage } from "../features/chatSlice";
+import { ChatMessage } from "../type/ChatModal";
+import "../resource/ChatModal.css";
+import VirtualKeyboard from "./VirtualKeyboard";
+interface ChatProps {
+  tableNo: number;
+  onClose: () => void;
+  initialMessage?: string | null;
+  stompClient?: Client | null;
+}
+const Chat: React.FC<ChatProps> = ({ tableNo, onClose, initialMessage, stompClient }) => {
+  const dispatch = useDispatch();
+  const chatMessages = useSelector((state: RootState) => state.chat.messages[tableNo] || []);
+  const [message, setMessage] = useState(initialMessage || "");
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  // 서버에서 기존 메시지 불러오기
+  // Redux 저장
+  useEffect(() => {
+    fetch(`${apiBaseUrl}/honki/chat/${tableNo}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("1기존 메시지 불러오기 성공:", data);
+        dispatch(setMessages({ tableNo, messages: data }));
+      })
+      .catch((err) => console.error("기존 메시지 불러오기 실패:", err));
+  }, [tableNo, dispatch]);
+  // 메시지 전송
+  const sendMessage = () => {
+    if (!stompClient || !stompClient.connected) {
+      console.error(":경광등: WebSocket이 아직 연결되지 않음.");
+      return;
+    }
+    if (!message.trim()) {
+      console.error(":경광등: 빈 메시지는 전송할 수 없음");
+      return;
+    }
+    const newMessage: ChatMessage = {
+      sender: "user",
+      content: message.trim(),
+      tableNo,
+      timestamp: Date.now(),
+      type: "CHAT"
+    };
+    console.log(":화살표가_있는_봉투: [손님] 메시지 전송:", newMessage);
+    // 서버로 발행
+    stompClient.publish({
+      destination: "/app/chat.sendMessage",
+      body: JSON.stringify(newMessage),
+    });
+    dispatch(addMessage(newMessage));
+    setMessage("");
+  };
+  // 채팅 메시지가 갱신될 때마다 스크롤 맨 아래로 이동
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+  return (
+    <div>
+      <div className="chat-messages" ref={chatContainerRef} style={{ overflowY: "auto", maxHeight: "300px" }}>
+        {chatMessages.length === 0 && <p>:말풍선:</p>}
+        {chatMessages.map((msg, index) => (
+          <div key={index} className={`chat-message ${msg.sender === "owner" ? "other-message" : "my-message"}`}>
+            <strong>{msg.sender}:</strong> {msg.content}
+          </div>
+        ))}
+      </div>
+      <div className="chat-input-container">
+        <input
+          type="text"
+          className="chat-input"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onFocus={() => setIsKeyboardOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              sendMessage();
             }
-        };
-    }, [tableId]);  // ✅ WebSocket과 모달은 독립적으로 유지
-
-    return (
-        <div>
-            <h2>Chat Room - Table {tableId}</h2>
-            <button onClick={() => setIsModalOpen(true)}>Open Chat</button> {/* ✅ 모달 열기 버튼 추가 */}
-            
-            {isModalOpen && (  // ✅ 모달을 상태에 따라 렌더링
-                <div className="modal">
-                    <div className="modal-content">
-                        <span className="close" onClick={() => setIsModalOpen(false)}>&times;</span>
-                        <h3>Chat</h3>
-                        <input
-                            type="text"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type a message..."
-                        />
-                        <button onClick={() => {
-                            if (stompClient) {
-                                stompClient.publish({
-                                    destination: "/app/chat.sendMessage",
-                                    body: JSON.stringify({ sender: username, content: message, tableId, type: "CHAT" })
-                                });
-                            }
-                        }}>Send</button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+          }}
+        />
+      </div>
+      {isKeyboardOpen && (
+        <VirtualKeyboard onChange={(input) => setMessage(input)} onSend={sendMessage} onClose={() => setIsKeyboardOpen(false)} />
+      )}
+    </div>
+  );
 };
-
 export default Chat;

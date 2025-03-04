@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PayrollMapper">
+
+    <!-- 모든 급여 정보 조회 -->
+    <select id="findAll" resultType="payroll">
+        SELECT * FROM EMPLOYEE_SALARY
+    </select>
+
+    <!-- 특정 직원의 급여 정보 조회 -->
+    <select id="findByEmployeeNo" parameterType="int" resultType="payroll">
+        SELECT * FROM EMPLOYEE_SALARY WHERE EMPLOYEE_NO = #{employeeNo}
+    </select>
+
+    <!-- 급여 정보 추가 -->
+    <insert id="insertPayroll">
+        INSERT INTO EMPLOYEE_SALARY (EMPLOYEE_NO, JOB_TITLE, BASE_SALARY, BONUS, TOTAL_SALARY, LAST_UPDATE, PAYMENT_DATE)
+        VALUES (#{employeeNo}, #{jobTitle}, #{baseSalary}, #{bonus}, #{totalSalary}, #{lastUpdate}, #{paymentDate})
+    </insert>
+
+	 <update id="updatePayroll">
+	    UPDATE EMPLOYEE_SALARY
+	    SET BASE_SALARY = #{baseSalary},
+	        BONUS = #{bonus},
+	        TOTAL_SALARY = #{totalSalary},
+	        PAYMENT_DATE = SYSDATE,
+	        LAST_UPDATE = SYSDATE  
+	    WHERE EMPLOYEE_NO = #{employeeNo}
+	</update>
+	
+	<update id="updatePayrollPaymentDate">
+	    UPDATE EMPLOYEE_SALARY
+	    SET PAYMENT_DATE = SYSDATE  
+	    WHERE EMPLOYEE_NO = #{employeeNo}
+	</update>
+	
+
+
+
+    <!-- 급여 정보 삭제 -->
+    <delete id="deletePayroll">
+        DELETE FROM EMPLOYEE_SALARY WHERE EMPLOYEE_NO=#{employeeNo}
+    </delete>
+
+</mapper>
+
+
+
+
+
+
+

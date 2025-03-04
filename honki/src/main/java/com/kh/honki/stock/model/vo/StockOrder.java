@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class StockOrder {
 	private int orderId;
-	private int menuNo;
-	private String menuName;
+	private int itemNo;      // MENU_NO 또는 OPTION_NO
+	private String itemType; // 'M' 또는 'O'
+	private String itemName; // 메뉴명 또는 옵션명
 	private int orderQuantity;
 	private int orderAmount;
 	private String orderDate;
+	private String status;
 }

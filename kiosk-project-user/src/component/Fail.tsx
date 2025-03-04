@@ -1,9 +1,11 @@
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate, useParams } from "react-router-dom";
 import Modal from "react-modal";
 import "../resource/FailPage.css"; // ✅ 스타일 유지
 
 const FailPage = () => {
   const [searchParams] = useSearchParams();
+  const storedTable = localStorage.getItem("currentTable");
+  const tableNo = storedTable ? parseInt(storedTable, 10) : 1; // 기본값: 1
   const navigate = useNavigate();
 
   const errorMessage = searchParams.get("message") || "알 수 없는 오류가 발생했습니다.";
@@ -18,8 +20,8 @@ const FailPage = () => {
        
 
         <div className="fail-buttons">
-          <button className="fail-btn home" onClick={() => navigate("/")}>🏠 홈으로 이동</button>
-          <button className="fail-btn cart" onClick={() => navigate("/cart")}>🛒 장바구니로 돌아가기</button>
+          <button className="fail-btn home" onClick={() => navigate(`/table/${tableNo}`)}>🏠 홈으로 이동</button>
+          <button className="fail-btn cart" onClick={() => navigate("/cart/:tableNo")}>🛒 장바구니로 돌아가기</button>
         </div>
       </div>
     </Modal>

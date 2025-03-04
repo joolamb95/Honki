@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="res">
+
+
+	<select id="getTableStatus" resultType="string">
+		SELECT STATUS FROM RESTAURANT_TABLE WHERE TABLE_NO = #{tableNo}
+	</select>
+
+	<select id="getAllTables"
+		resultType="com.kh.honki.restaurantTable.model.vo.RestaurantTable">
+		SELECT TABLE_NO, STATUS FROM RESTAURANT_TABLE
+	</select>
+
+
+</mapper>
