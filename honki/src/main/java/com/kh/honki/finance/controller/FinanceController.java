@@ -1,7 +1,10 @@
 package com.kh.honki.finance.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +33,41 @@ public class FinanceController {
 	
 	
 	@GetMapping("/expends")
-	public List<Expend> getExpends(@RequestParam String yearMonth){
-		log.info("📌 getExpends() 요청 받음: yearMonth={}", yearMonth); // ✅ 요청 확인 로그
-		return service.getExpends(yearMonth);
+	public Map<String, List<Expend>> getExpends(@RequestParam String yearMonth) {
+	    log.info("📌 getExpends() 요청 받음: yearMonth={}", yearMonth);
+
+	    // 🔹 이전 월 계산
+	    String prevMonth = getPrevMonth(yearMonth);
+	    log.info("📌 이전 월 데이터도 요청: prevMonth={}", prevMonth);
+
+	    // 🔹 현재 월과 이전 월의 데이터를 조회
+	    List<Expend> currentExpends = service.getExpends(yearMonth);
+	    List<Expend> prevExpends = service.getExpends(prevMonth);
+
+	    // 🔹 결과를 Map 형태로 반환 (프론트에서 쉽게 사용 가능)
+	    Map<String, List<Expend>> result = new HashMap<>();
+	    result.put("currentMonth", currentExpends);
+	    result.put("prevMonth", prevExpends);
+
+	    return result;
 	}
-	
+
+	// 🔹 이전 월 계산 로직 추가
+	private String getPrevMonth(String yearMonth) {
+	    String[] parts = yearMonth.split("-");
+	    int year = Integer.parseInt(parts[0]);
+	    int month = Integer.parseInt(parts[1]);
+
+	    if (month == 1) {
+	        year--;
+	        month = 12;
+	    } else {
+	        month--;
+	    }
+
+	    return String.format("%d-%02d", year, month); // 예: "2025-01"
+	}
+
 	@GetMapping("/expends/months")
 	public List<String> getExpendsMonths() {
 	    return service.getExpendsMonths();
@@ -42,9 +75,18 @@ public class FinanceController {
 	
 	
 	@PostMapping("/expends")
-    public void insertExpend(@RequestBody Expend expend) {
-        service.insertExpend(expend);
-    }
+	public ResponseEntity<?> insertExpend(@RequestBody List<Expend> expends) {
+	    if (expends == null || expends.isEmpty()) {
+	        return ResponseEntity.badRequest().body("입력 데이터가 비어 있습니다.");
+	    }
+	    
+	    for (Expend expend : expends) {
+	        log.info("📌 저장할 데이터: {}", expend);
+	        service.insertExpend(expend);
+	    }
+	    
+	    return ResponseEntity.ok("저장 완료");
+	}
 
 	
     @PutMapping("/expends/{id}")
@@ -58,4 +100,24 @@ public class FinanceController {
     public void deleteExpend(@PathVariable int id) {
         service.deleteExpend(id);
     }
+    
+    @GetMapping("/sales")
+    public List<Map<String, Object>> getMonthlySales(@RequestParam String yearMonth) {
+        log.info("📌 매출 데이터 요청: yearMonth = {}", yearMonth);
+        return service.getMonthlySales(yearMonth);
+    }
+
+    
+    @GetMapping("/sales/weekly")
+    public List<Map<String, Object>> getWeeklySales() {
+        log.info("📌 주별 매출 요청");
+        return service.getWeeklySales();
+    }
+    
+    @GetMapping("/sales/top-menus")
+    public List<Map<String, Object>> getTopMenus() {
+        log.info("📌 인기 메뉴 요청");
+        return service.getTopMenus();
+    }
+    
 }

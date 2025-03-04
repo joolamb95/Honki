@@ -3,16 +3,90 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="finance">
-		<select id="getExpends" resultType="expend">
-			SELECT * FROM EXPENDS
-			WHERE TO_CHAR(EXPEND_DATE, 'YYYY-MM') = #{yearMonth}
-			AND STATUS = 'N'
-			ORDER BY EXPEND_DATE DESC
-		</select>
+
+ 	<!-- 전체 지출 내역의 월 정보 가져오기 -->
+	<select id="getExpends" resultType="expend">
+		SELECT * FROM EXPENDS
+		WHERE TO_CHAR(EXPEND_DATE, 'YYYY-MM') = #{yearMonth}
+		AND STATUS = 'N'
+		ORDER BY EXPEND_DATE DESC
+	</select>
 		
-		<select id="getExpendsMonths" resultType="string">
+	<!-- 특정 월의 지출 내역 조회 -->
+	<select id="getExpendsMonths" resultType="string">
     	SELECT DISTINCT TO_CHAR(EXPEND_DATE, 'YYYY-MM') AS yearMonth FROM EXPENDS ORDER BY 1 DESC
-		</select>
+	</select>
+		
+	<!-- 새로운 지출 내역 추가 -->
+    <insert id="insertExpend">
+        INSERT INTO EXPENDS (EXPEND_NO,CATEGORY, AMOUNT, DESCRIPTION, EXPEND_DATE, STATUS)
+        VALUES (SEQ_EXPEND_NO.NEXTVAL, #{category}, #{amount}, #{description}, #{expendDate}, 'N')
+    </insert>
+
+    <!-- 기존 지출 내역 수정 -->
+    <update id="updateExpend">
+        UPDATE EXPENDS
+        SET CATEGORY = #{category},
+            AMOUNT = #{amount},
+            DESCRIPTION = #{description},
+            EXPEND_DATE = #{expendDate}
+        WHERE EXPEND_NO = #{expendNo}
+    </update>
+    
+	<!-- 특정 지출 내역 삭제 (STATUS='Y'로 변경하여 소프트 삭제) -->
+    <update id="deleteExpend">
+        UPDATE EXPENDS
+        SET STATUS = 'Y'
+        WHERE EXPEND_NO = #{id}
+    </update>
+    
+    <!-- 월별 매출 데이터 조회 -->
+    <select id="getMonthlySales" resultType="map">
+		SELECT 
+		    TO_CHAR(P.CREATE_DATE, 'YYYY-MM-DD') AS "date", 
+		    SUM(P.AMOUNT) AS sales
+		FROM PAYMENT P
+		WHERE TO_CHAR(P.CREATE_DATE, 'YYYY-MM') = #{yearMonth}
+		GROUP BY TO_CHAR(P.CREATE_DATE, 'YYYY-MM-DD')
+		ORDER BY TO_CHAR(P.CREATE_DATE, 'YYYY-MM-DD') ASC
+    </select>
+    
+    <!-- 주별 매출 데이터 조회 -->
+    <select id="getWeeklySales" resultType="map">
+        SELECT
+            TO_CHAR(O.ORDER_DATE, 'DY') AS day,
+            CASE 
+                WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 17 AND 20 THEN 'earlySales'
+                WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 21 AND 2 THEN 'lateSales'
+            END AS time_period,
+            SUM(O.TOTAL_PRICE) AS sales
+        FROM ORDERS O
+        WHERE ORDER_DATE >= TRUNC(SYSDATE, 'D') - 7  -- 최근 7일
+        GROUP BY TO_CHAR(O.ORDER_DATE, 'DY'), 
+                 CASE 
+                    WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 17 AND 20 THEN 'earlySales'
+                    WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 21 AND 2 THEN 'lateSales'
+                 END
+        ORDER BY day ASC
+    </select>
+
+    <!-- 인기 메뉴 Top 3 조회 -->
+	<select id="getTopMenus" resultType="map">
+		SELECT 
+		    CASE 
+		        WHEN C.CATEGORY_NAME = '주류' THEN '주류'
+		        WHEN C.CATEGORY_NAME = '음료' THEN '논알콜'
+		        ELSE '안주류'
+		    END AS category,
+		    M.MENU_NO AS id,  
+		    M.MENU_NAME AS name, 
+		    NVL(COUNT(OD.MENU_NO), 0) AS orders
+		FROM ORDERS_DETAIL OD
+		JOIN MENU M ON OD.MENU_NO = M.MENU_NO
+		JOIN CATEGORY C ON M.CATEGORY_NO = C.CATEGORY_NO
+		GROUP BY C.CATEGORY_NAME, M.MENU_NO, M.MENU_NAME
+		ORDER BY category, orders DESC
+	</select>
 </mapper>
 
 

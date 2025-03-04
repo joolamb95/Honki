@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'), // `@`를 `src`로 매핑
-    },
+    },  
+  },
+  define: {
+    global: "window",
   },
 });
