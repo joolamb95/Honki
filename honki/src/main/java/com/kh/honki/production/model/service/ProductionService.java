@@ -11,7 +11,7 @@ import com.kh.honki.menu.model.vo.Menu;
 import com.kh.honki.option.model.vo.Option;
 import com.kh.honki.production.model.dao.ProductionDao;
 import com.kh.honki.stock.model.dao.StockDao;
-import com.kh.honki.order.model.dto.OrderDetailDto;
+import com.kh.honki.order.model.vo.OrderDetailDTO;
 
 import jakarta.servlet.annotation.HttpConstraint;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +74,7 @@ public class ProductionService {
 		productionDao.deleteOption(optionNo);
 	}
 
-	public List<OrderDetailDto> getOrderList(String startDate, String endDate, 
+	public List<OrderDetailDTO> getOrderList(String startDate, String endDate, 
 			String searchCategory, String searchTerm) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("startDate", startDate);
