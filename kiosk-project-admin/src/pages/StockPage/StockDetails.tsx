@@ -27,7 +27,19 @@ interface StockHistoryItem {
     status: string;
 }
 
+interface StockOrder {
+    orderId: number;
+    itemNo: number;
+    itemType: 'M' | 'O';
+    itemName: string;
+    orderQuantity: number;
+    orderAmount: number;
+    orderDate: string;
+    status: string;
+}
+
 const StockDetails: React.FC = () => {
+    const [orders, setOrders] = useState<StockOrder[]>([]);
     const [postponeOrders, setPostponeOrders] = useState<StockOrderItem[]>([]);
     const [orderHistory, setOrderHistory] = useState<StockHistoryItem[]>([]);
     const [startDate, setStartDate] = useState('2025-01-01');
@@ -37,30 +49,44 @@ const StockDetails: React.FC = () => {
     const [searchCategory, setSearchCategory] = useState('전체');
 
     const navigate = useNavigate();
+
     const location = useLocation();
 
     useEffect(() => {
-        fetchPostponeOrders();
-        fetchOrderHistory();
-    }, []);
+        if (activeTab === 'postpone') {
+            fetchPostponeOrders();
+        } else {
+            fetchOrderHistory();
+        }
+    }, [activeTab]);
 
     const fetchPostponeOrders = async () => {
         try {
-            const response = await axios.get<StockOrderItem[]>('http://localhost:8080/honki/stock/postpone');
-            setPostponeOrders(response.data);
-        } catch(error){
-            console.error('대기 중인 주문 조회 실패', error);
-            setPostponeOrders([]);
+            const response = await axios.get<StockOrder[]>('http://localhost:8080/honki/stock/postpone');
+            if (Array.isArray(response.data)) {
+                setOrders(response.data);
+            } else {
+                console.error('주문 데이터가 배열 형식이 아닙니다:', response.data);
+                setOrders([]);
+            }
+        } catch (error) {
+            console.error('대기 중인 주문 조회 실패:', error);
+            setOrders([]);
         }
     };
 
     const fetchOrderHistory = async () => {
         try {
-            const response = await axios.get<StockHistoryItem[]>('http://localhost:8080/honki/stock/history');
-            setOrderHistory(response.data);
+            const response = await axios.get<StockOrder[]>('http://localhost:8080/honki/stock/history');
+            if (Array.isArray(response.data)) {
+                setOrders(response.data);
+            } else {
+                console.error('주문 내역 데이터가 배열 형식이 아닙니다:', response.data);
+                setOrders([]);
+            }
         } catch (error) {
-            console.error('주문 내역 조회 실패:' , error);
-            setOrderHistory([]);
+            console.error('주문 내역 조회 실패:', error);
+            setOrders([]);
         }
     };
 
@@ -69,7 +95,6 @@ const StockDetails: React.FC = () => {
             await axios.post(`http://localhost:8080/honki/stock/orders/${orderId}/approve`);
             alert('주문이 승인되었습니다.');
             fetchPostponeOrders();
-            fetchOrderHistory();
         } catch (error) {
             console.error('주문 승인 실패:', error);
             alert('주문 승인에 실패했습니다.');
@@ -79,9 +104,11 @@ const StockDetails: React.FC = () => {
     const handleCancelOrder = async (orderId: number) => {
         try {
             await axios.post(`http://localhost:8080/honki/stock/orders/${orderId}/cancel`);
-            fetchPostponeOrders(); // 목록 새로고침
+            alert('주문이 취소되었습니다.');
+            fetchPostponeOrders();
         } catch (error) {
-            console.error('주문 취소 실패', error);
+            console.error('주문 취소 실패:', error);
+            alert('주문 취소에 실패했습니다.');
         }
     };
 
@@ -95,41 +122,43 @@ const StockDetails: React.FC = () => {
         }
     };
 
-    const filteredData = useMemo(() => {
-        const data = activeTab === 'postpone' ? postponeOrders : orderHistory;
-        return data.filter(item => {
-            const itemDate = new Date(item.orderDate);
-            const startDateTime = new Date(startDate);
-            const endDateTime = new Date(endDate);
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order => {
+            // order가 null이거나 undefined인 경우 필터링에서 제외
+            if (!order) return false;
+
+            const orderDate = new Date(order.orderDate);
+            const start = new Date(startDate);
+            const end = new Date(endDate);
             
-            if (itemDate < startDateTime || itemDate > endDateTime) return false;
-            if (!searchTerm) return true;
-
-            const searchLower = searchTerm.toLowerCase();
-            const itemId = activeTab === 'postpone' ? 
-                (item as StockOrderItem).orderId : 
-                (item as StockHistoryItem).orderId;
-
-            switch (searchCategory) {
-                case '전체':
-                    return String(itemId).includes(searchLower) ||
-                           String(item.menuNo).includes(searchLower) ||
-                           item.menuName.toLowerCase().includes(searchLower);
-                case '발주 번호':
-                    return String(itemId).includes(searchLower);
-                case '메뉴 번호':
-                    return String(item.menuNo).includes(searchLower);
-                case '메뉴 이름':
-                    return item.menuName.toLowerCase().includes(searchLower);
-                case '결제 금액':
-                    return String(item.orderAmount).includes(searchLower);
-                default:
-                    return true;
+            // 날짜 범위 필터링
+            const isInDateRange = orderDate >= start && orderDate <= end;
+            
+            // 검색어 필터링
+            let matchesSearch = true;
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                switch (searchCategory) {
+                    case '발주 번호':
+                        matchesSearch = order.orderId?.toString().includes(term) || false;
+                        break;
+                    case '품목 번호':
+                        matchesSearch = order.itemNo?.toString().includes(term) || false;
+                        break;
+                    case '품목 이름':
+                        matchesSearch = order.itemName?.toLowerCase().includes(term) || false;
+                        break;
+                    default:
+                        matchesSearch = 
+                            (order.orderId?.toString().includes(term) || false) ||
+                            (order.itemNo?.toString().includes(term) || false) ||
+                            (order.itemName?.toLowerCase().includes(term) || false);
+                }
             }
+
+            return isInDateRange && matchesSearch;
         });
-    }, [activeTab, postponeOrders, orderHistory, searchTerm, searchCategory, startDate, endDate]);
-
-
+    }, [orders, startDate, endDate, searchTerm, searchCategory]);
 
     return (
         <div className="stock-management">
@@ -154,8 +183,6 @@ const StockDetails: React.FC = () => {
                 </button>
             </div>
 
-
-
             <div className="content-wrapper">
                 <div className="content-header">재고 내역</div>
                 <div className="order-tabs">
@@ -173,7 +200,7 @@ const StockDetails: React.FC = () => {
                     </button>
                 </div>
                 <div className="date-section">
-                    <div className="date-label">결제 날짜</div>
+                    <div className="date-label">주문 일자</div>
                     <div className="date-inputs">
                         <input 
                             type="date" 
@@ -192,24 +219,20 @@ const StockDetails: React.FC = () => {
                 <div className="search-section">
                     <div className="search-box">
                         <select 
-                            className="menu-select"
                             value={searchCategory}
                             onChange={(e) => setSearchCategory(e.target.value)}
                         >
                             <option>전체</option>
                             <option>발주 번호</option>
-                            <option>메뉴 번호</option>
-                            <option>메뉴 이름</option>
-                            <option>결제 금액</option>
+                            <option>품목 번호</option>
+                            <option>품목 이름</option>
                         </select>
                         <input 
                             type="text" 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyPress={handleKeyPress}
                             placeholder="검색어를 입력하세요"
                         />
-                        <button onClick={handleSearch}>검색</button>
                     </div>
                 </div>
             </div>
@@ -217,48 +240,35 @@ const StockDetails: React.FC = () => {
             <table className='stock-details-table'>
                 <thead>
                     <tr>
-                    <th>{activeTab === 'postpone' ? '주문 번호' : '내역 번호'}</th>
-                        <th>결제 날짜</th>
-                        <th>메뉴 번호</th>
-                        <th>메뉴 이름</th>
+                        <th>주문 번호</th>
+                        <th>항목 번호</th>
+                        <th>구분</th>
+                        <th>항목명</th>
                         <th>수량</th>
-                        <th>재고 수정</th>
-                        <th>결제 금액</th>
-                        {activeTab === 'postpone' && <th>최종승인</th>}
+                        <th>금액</th>
+                        <th>주문일시</th>
+                        <th>상태</th>
+                        {activeTab === 'postpone' && <th>작업</th>}
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredData.map((item) => (
-                        <tr key={activeTab === 'postpone' ? 
-                            (item as StockOrderItem).orderId : 
-                            (item as StockHistoryItem).orderId}
-                        >
-                            <td>{activeTab === 'postpone' ? 
-                                `O${String((item as StockOrderItem).orderId).padStart(3, '0')}` : 
-                                `H${String((item as StockHistoryItem).orderId).padStart(3, '0')}`}
-                            </td>
-                            <td>{new Date(item.orderDate).toLocaleDateString()}</td>
-                            <td>{item.menuNo}</td>
-                            <td>{item.menuName}</td>
-                            <td>{item.orderQuantity}</td>
-                            <td>{activeTab === 'postpone' ? 
-                                (item as StockOrderItem).orderQuantity : 
-                                (item as StockHistoryItem).stockQuantity}
-                            </td>
-                            <td>{`${item.orderAmount?.toLocaleString() || 0}원`}</td>
+                    {filteredOrders.map(order => (
+                        <tr key={order.orderId}>
+                            <td>{order.orderId}</td>
+                            <td>{order.itemNo}</td>
+                            <td>{order.itemType === 'M' ? '메뉴' : '옵션'}</td>
+                            <td>{order.itemName}</td>
+                            <td>{order.orderQuantity}</td>
+                            <td>{order.orderAmount.toLocaleString()}원</td>
+                            <td>{order.orderDate}</td>
+                            <td>{order.status}</td>
                             {activeTab === 'postpone' && (
                                 <td>
                                     <div className='button-menu'>
-                                        <button 
-                                            onClick={() => handleApproveOrder((item as StockOrderItem).orderId)}
-                                            className="approve-button"
-                                        >
+                                        <button className="approve-button" onClick={() => handleApproveOrder(order.orderId)}>
                                             승인
                                         </button>
-                                        <button 
-                                            onClick={() => handleCancelOrder((item as StockOrderItem).orderId)}
-                                            className="cancel-button2"
-                                        >
+                                        <button className="cancel-button2" onClick={() => handleCancelOrder(order.orderId)}>
                                             취소
                                         </button>
                                     </div>

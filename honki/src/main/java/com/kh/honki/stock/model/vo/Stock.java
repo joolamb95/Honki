@@ -15,4 +15,5 @@ public class Stock {
 	private int stockQuantity;
 	private String stockLastUpdate;
 	private String stockStatus;
+	private String stockType;  // 'M' 또는 'O'
 }

@@ -1,23 +1,18 @@
-import React, {useState } from 'react';
+import React, {useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../../style/AddMenu.css';
+import axios from 'axios';
 
+// DB 테이블 구조에 맞는 인터페이스
 interface Menu {
-    menuNo: number;          // MENU_NO
-    menuName: string;        // MENU_NAME
-    menuPrice: number;       // MENU_PRICE
-    menuImg: string;         // MENU_IMG
-    menuStatus: string;      // MENU_STATUS
-    categoryNo: number;      // CATEGORY_NO
-    engName: string;         // ENG_NAME
-}
-
-interface MenuItem {
-    menuNo: string;
-    categoryName: string;
-    menuImg: string;
-    menuName: string;
-    menuPrice: string;
+    menuNo: number;          // MENU_NO (NUMBER)
+    menuName: string;        // MENU_NAME (VARCHAR2(100))
+    menuPrice: number;       // MENU_PRICE (NUMBER)
+    menuImg: string;         // MENU_IMG (VARCHAR2(100))
+    menuStatus: string;      // MENU_STATUS (VARCHAR2(50))
+    categoryNo: number;      // CATEGORY_NO (NUMBER)
+    categoryName: string;    // CATEGORY_NAME from JOIN
+    engName: string;         // ENG_NAME (VARCHAR2(60))
 }
 
 const AddMenu: React.FC = () => {
@@ -26,36 +21,63 @@ const AddMenu: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [ModifyModal, setModifyModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [menuToDelete, setMenuToDelete] = useState<string | null>(null);
-    const [menuList, setMenuList] = useState<MenuItem[]>([
-        { menuNo: 'M005', categoryName: '탕 류', menuImg: '이미지', menuName: '마라탕', menuPrice: '14,000원' },
-        { menuNo: 'M004', categoryName: '음료/주류', menuImg: '이미지', menuName: '진로', menuPrice: '1,900원' },
-        { menuNo: 'M003', categoryName: '사이드', menuImg: '이미지', menuName: '계란말이', menuPrice: '8,000원' },
-        { menuNo: 'M002', categoryName: '탕 류', menuImg: '이미지', menuName: '김치찌개', menuPrice: '8,000원' },
-        { menuNo: 'M001', categoryName: '사이드', menuImg: '이미지', menuName: '라면', menuPrice: '4,000원' },
-    ]);
+    const [menuToDelete, setMenuToDelete] = useState<number | null>(null);
+    const [menuList, setMenuList] = useState<Menu[]>([]);
     
     const [menuForm, setMenuForm] = useState<Menu>({
         menuNo: 0,
-        categoryNo: 0,
         menuName: '',
         menuPrice: 0,
         menuImg: '',
-        menuStatus: 'ACTIVE',
+        menuStatus: 'Y',
+        categoryNo: 0,
+        categoryName: '',
         engName: ''
     });
 
     const [modifyForm, setModifyForm] = useState<Menu>({
         menuNo: 0,
-        categoryNo: 0,
         menuName: '',
         menuPrice: 0,
         menuImg: '',
-        menuStatus: 'ACTIVE',
+        menuStatus: 'Y',
+        categoryNo: 0,
+        categoryName: '',
         engName: ''
     });
 
-    const categories = ['선택하세요', '안주류', '음료/주류', '탕류', '사이드'];
+    // 실제 DB에서 가져올 카테고리 목록
+    const categories = ['선택하세요', '사시미', '구이', '꼬치', '찜', '탕', '식사', '라멘', '튀김', '사이드', '음료/주류'];
+
+    // 초기 폼 상태 정의
+    const initialMenuForm: Menu = {
+        menuNo: 0,
+        menuName: '',
+        menuPrice: 0,
+        menuImg: '',
+        menuStatus: 'Y',
+        categoryNo: 0,
+        categoryName: '',
+        engName: ''
+    };
+
+    // 폼 상태를 초기화하는 함수
+    const resetForm = () => {
+        setMenuForm({...initialMenuForm});
+        setModifyForm({...initialMenuForm});
+    };
+
+    // 모달 닫기 함수 수정
+    const handleCloseModal = () => {
+        setShowModal(false);
+        resetForm();  // 폼 초기화 추가
+    };
+
+    // 수정 모달 닫기 함수 수정
+    const handleCloseModifyModal = () => {
+        setModifyModal(false);
+        resetForm();  // 폼 초기화 추가
+    };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -78,83 +100,72 @@ const AddMenu: React.FC = () => {
         }));
     };
 
-    const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-
-        // 유효성 검사
-        if (menuForm.categoryNo === 0) {
-            alert('카테고리를 선택해주세요.');
-            return;
+    // 저장 후 모달 닫기 수정
+    const handleSubmit = async () => {
+        try {
+            await axios.post('http://localhost:8080/honki/menu/add', menuForm);
+            alert('메뉴가 추가되었습니다.');
+            fetchMenuList();
+            handleCloseModal();  // 수정된 닫기 함수 사용
+        } catch (error) {
+            console.error('메뉴 추가 실패:', error);
+            alert('메뉴 추가에 실패했습니다.');
         }
-        if (!menuForm.menuName.trim()) {
-            alert('메뉴 이름을 입력해주세요.');
-            return;
-        }
-        if (menuForm.menuPrice <= 0) {
-            alert('메뉴 가격을 입력해주세요.');
-            return;
-        }
-
-        // 새로운 메뉴 번호 생성
-        const lastMenuNo = menuList[0]?.menuNo || 'M000';
-        const newMenuNo = `M${String(Number(lastMenuNo.slice(1)) + 1).padStart(3, '0')}`;
-
-        // 새로운 메뉴 아이템 생성
-        const newMenuItem: MenuItem = {
-            menuNo: newMenuNo,
-            categoryName: categories[menuForm.categoryNo],
-            menuImg: menuForm.menuImg || '이미지',
-            menuName: menuForm.menuName,
-            menuPrice: `${menuForm.menuPrice.toLocaleString()}원`
-        };
-
-        // 메뉴 리스트 업데이트
-        setMenuList(prevList => [newMenuItem, ...prevList]);
-
-        // 초기화
-        setMenuForm({
-            menuNo: 0,
-            categoryNo: 0,
-            menuName: '',
-            menuPrice: 0,
-            menuImg: '',
-            menuStatus: 'ACTIVE',
-            engName: ''
-        });
-        setShowModal(false);
     };
 
-    const handleDeleteClick = (menuNo: string) => {
+    const fetchMenuList = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/honki/menu/list');
+            setMenuList(response.data);
+        } catch (error) {
+            console.error('메뉴 목록 조회 실패:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchMenuList();
+    }, []);
+
+    const handleDeleteClick = (menuNo: number) => {
         setMenuToDelete(menuNo);
         setShowDeleteModal(true);
     };
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = async () => {
         if (menuToDelete) {
+            try {
+                const response = await axios.delete(`http://localhost:8080/honki/menu/delete/${menuToDelete}`);
+                if (response.status === 200) {
             setMenuList(prevList => prevList.filter(menu => menu.menuNo !== menuToDelete));
+                    alert('메뉴가 삭제되었습니다.');
+                }
+            } catch (error) {
+                console.error('메뉴 삭제 실패:', error);
+                alert('메뉴 삭제에 실패했습니다.');
+            }
             setShowDeleteModal(false);
             setMenuToDelete(null);
         }
     };
 
-    const handleModifyClick = (menu: MenuItem) => {
-        const categoryIndex = categories.findIndex(cat => cat === menu.categoryName);
-        
+    const handleModifyClick = (menu: Menu) => {
         setModifyForm({
-            menuNo: Number(menu.menuNo.slice(1)),
-            categoryNo: categoryIndex,
+            menuNo: menu.menuNo,
             menuName: menu.menuName,
-            menuPrice: Number(menu.menuPrice.replace(/[^0-9]/g, '')),
+            menuPrice: menu.menuPrice,
             menuImg: menu.menuImg,
-            menuStatus: 'ACTIVE',
-            engName: ''
+            menuStatus: menu.menuStatus,
+            categoryNo: menu.categoryNo,
+            categoryName: menu.categoryName,
+            engName: menu.engName
         });
         setModifyModal(true);
     };
 
-    const handleModifySubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleModifySubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
 
+        // 유효성 검사
         if (modifyForm.categoryNo === 0) {
             alert('카테고리를 선택해주세요.');
             return;
@@ -168,20 +179,17 @@ const AddMenu: React.FC = () => {
             return;
         }
 
-        setMenuList(prevList => prevList.map(menu => {
-            if (Number(menu.menuNo.slice(1)) === modifyForm.menuNo) {
-                return {
-                    ...menu,
-                    categoryName: categories[modifyForm.categoryNo],
-                    menuName: modifyForm.menuName,
-                    menuPrice: `${modifyForm.menuPrice.toLocaleString()}원`,
-                    menuImg: modifyForm.menuImg
-                };
+        try {
+            const response = await axios.put('http://localhost:8080/honki/menu/update', modifyForm);
+            if (response.status === 200) {
+                alert('메뉴가 수정되었습니다.');
+                setModifyModal(false);
+                fetchMenuList(); // 메뉴 목록 새로고침
             }
-            return menu;
-        }));
-
-        setModifyModal(false);
+        } catch (error) {
+            console.error('메뉴 수정 실패:', error);
+            alert('메뉴 수정에 실패했습니다.');
+        }
     };
 
     return (
@@ -228,25 +236,28 @@ const AddMenu: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {menuList.map((menu, index) => (
-                            <tr key={index}>
+                        {menuList.map((menu) => (
+                            <tr key={menu.menuNo}>
                                 <td>{menu.menuNo}</td>
-                                <td>{menu.categoryName}</td>
-                                <td>{menu.menuImg}</td>
+                                <td>{menu.categoryName || '미분류'}</td>
+                                <td className="menu-image-cell">
+                                    <img 
+                                        src={menu.menuImg} 
+                                        alt={menu.menuName}
+                                        className="menu-image"
+                                        onError={(e) => {
+                                            e.currentTarget.src = '/default-menu.png'  // 이미지 로드 실패시 기본 이미지
+                                        }}
+                                    />
+                                </td>
                                 <td>{menu.menuName}</td>
-                                <td>{menu.menuPrice}</td>
+                                <td>{menu.menuPrice.toLocaleString()}원</td>
                                 <td>
                                     <div className='button-menu'>
-                                        <button 
-                                            className="edit-btn" 
-                                            onClick={() => handleModifyClick(menu)}
-                                        >
+                                        <button className="edit-btn" onClick={() => handleModifyClick(menu)}>
                                             수정
                                         </button>
-                                        <button 
-                                            className="delete-btn"
-                                            onClick={() => handleDeleteClick(menu.menuNo)}
-                                        >
+                                        <button className="delete-btn" onClick={() => handleDeleteClick(menu.menuNo)}>
                                             삭제
                                         </button>
                                     </div>
@@ -258,18 +269,18 @@ const AddMenu: React.FC = () => {
             </div>
 
             {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+                <div className="modal-view">
+                    <div className="modal-box">
                         <div className="modal-header">
                             <h2>신규 메뉴 추가</h2>
                             <button 
                                 type="button"
                                 className="close-btn" 
-                                onClick={() => setShowModal(false)}
+                                onClick={handleCloseModal}
                             >×</button>
                         </div>
                         <div className="modal-body">
-                            <div className="form-group">
+                            {/* <div className="form-group">
                                 <label>메뉴 이미지</label>
                                 <div className="image-upload-container">
                                     {menuForm.menuImg ? (
@@ -299,6 +310,18 @@ const AddMenu: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+                            </div> */}
+                            <div className="form-group">
+                                <label>메뉴 이미지</label>
+                                <input 
+                                    type="text"
+                                    value={menuForm.menuImg}
+                                    onChange={(e) => setMenuForm(prev => ({
+                                        ...prev,
+                                        menuImg: e.target.value
+                                    }))}
+                                    placeholder="메뉴 이미지의 주소를 입력해주세요"
+                                />
                             </div>
                             <div className="form-group">
                                 <label>카테고리</label>
@@ -341,14 +364,15 @@ const AddMenu: React.FC = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>메뉴 설명</label>
-                                <textarea
+                                <label>영어 명칭</label>
+                                <input 
+                                    type="text" 
                                     value={menuForm.engName}
                                     onChange={(e) => setMenuForm(prev => ({
                                         ...prev,
                                         engName: e.target.value
                                     }))}
-                                    placeholder="메뉴 설명을 입력하세요"
+                                    placeholder="메뉴 영어 이름을 작성하세요"
                                 />
                             </div>
                         </div>
@@ -358,14 +382,14 @@ const AddMenu: React.FC = () => {
                                 className="submit-btn" 
                                 onClick={handleSubmit}
                             >
-                                추가
+                                저장
                             </button>
                             <button 
                                 type="button"
                                 className="cancel-btn" 
-                                onClick={() => setShowModal(false)}
+                                onClick={handleCloseModal}
                             >
-                                닫기
+                                취소
                             </button>
                         </div>
                     </div>
@@ -413,18 +437,18 @@ const AddMenu: React.FC = () => {
             )}
 
             {ModifyModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+                <div className="modal-view">
+                    <div className="modal-box">
                         <div className="modal-header">
                             <h2>메뉴 수정</h2>
                             <button 
                                 type="button"
                                 className="close-btn" 
-                                onClick={() => setModifyModal(false)}
+                                onClick={handleCloseModifyModal}
                             >×</button>
                         </div>
                         <div className="modal-body">
-                            <div className="form-group">
+                            {/* <div className="form-group">
                                 <label>메뉴 이미지</label>
                                 <div className="image-upload-container">
                                     {modifyForm.menuImg ? (
@@ -466,6 +490,18 @@ const AddMenu: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+                            </div> */}
+                            <div className="form-group">
+                                <label>메뉴 이미지</label>
+                                <input 
+                                    type="text"
+                                    value={modifyForm.menuImg}
+                                    onChange={(e) => setModifyForm(prev => ({
+                                        ...prev,
+                                        menuImg: e.target.value
+                                    }))}
+                                    placeholder="메뉴 이미지의 주소를 입력해주세요"
+                                />
                             </div>
                             <div className="form-group">
                                 <label>카테고리</label>
@@ -507,6 +543,18 @@ const AddMenu: React.FC = () => {
                                     placeholder="가격을 입력하세요"
                                 />
                             </div>
+                            <div className="form-group">
+                                <label>영어 명칭</label>
+                                <input 
+                                    type="text" 
+                                    value={menuForm.engName}
+                                    onChange={(e) => setModifyForm(prev => ({
+                                        ...prev,
+                                        engName: e.target.value
+                                    }))}
+                                    placeholder="메뉴 영어 이름을 작성하세요"
+                                />
+                            </div>
                         </div>
                         <div className="modal-footer">
                             <button 
@@ -519,7 +567,7 @@ const AddMenu: React.FC = () => {
                             <button 
                                 type="button"
                                 className="cancel-btn" 
-                                onClick={() => setModifyModal(false)}
+                                onClick={handleCloseModifyModal}
                             >
                                 취소
                             </button>
