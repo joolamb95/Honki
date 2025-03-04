@@ -194,11 +194,17 @@ const EmployeeManagement: React.FC = () => {
   };
 
   const handleDelete = async (employeeNo: number) => {
+    if (!employeeNo) {
+      alert("잘못된 사원 정보입니다.");
+      return;
+    }
+    
+    const confirmed = window.confirm("정말 삭제하시겠습니까?");
+    if (!confirmed) {
+      return;
+    }
+    
     try {
-      if (!employeeNo) {
-        alert("잘못된 사원 정보입니다.");
-        return;
-      }
       console.log("🔹 사원 삭제 요청:", employeeNo);
       await axios.delete(`http://localhost:8080/honki/api/employees/${employeeNo}`);
       setEmployees((prev) => prev.filter((employee) => employee.employeeNo !== employeeNo));
