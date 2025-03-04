@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.honki.option.model.vo.Option;
 import com.kh.honki.stock.model.service.StockService;
 import com.kh.honki.stock.model.vo.Stock;
 import com.kh.honki.stock.model.vo.StockOrder;
+import com.kh.honki.stock.model.vo.StockOption;
+
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,17 +34,12 @@ public class StockController {
 	
 	@GetMapping("/stock")
 	@CrossOrigin(origins = "http://localhost:5173")
-	public List<Stock> StockList(HttpServletResponse response) {
+	public ResponseEntity<List<Stock>> getStockList() {
 		try {
-			log.debug("재고 목록 조회 요청");
-			
 			List<Stock> stockList = stockService.StockList();
-			log.debug("stockList : {}", stockList);
-			
-			return stockList;
-		} catch(Exception e) {
-			log.error("재고 목록 조회 실패: ", e);
-			return new ArrayList<>();
+			return ResponseEntity.ok(stockList);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
 	
@@ -49,9 +47,9 @@ public class StockController {
 	@CrossOrigin(origins = "http://localhost:5173")
 	public ResponseEntity<String> orderStock(@RequestBody StockOrder stockOrder) {
 		try {
-			log.info("재고 주문 요청: {}", stockOrder);
+//			log.info("재고 주문 요청: {}", stockOrder);
 			stockService.orderStock(stockOrder);
-			log.info("재고 주문 성공");
+//			log.info("재고 주문 성공");
 			return ResponseEntity.ok("재고 주문 성공");
 		} catch(Exception e) {
 			log.error("재고 주문 실패: ", e);
@@ -84,4 +82,17 @@ public class StockController {
 		stockService.cancelOrder(orderId);
 		return ResponseEntity.ok("주문이 취소되었습니다.");
 	}
+	
+	@GetMapping("/stock/options")
+	@CrossOrigin(origins = "http://localhost:5173")
+	public ResponseEntity<List<StockOption>> getStockOptionList() {
+		try {
+			List<StockOption> stockOptionList = stockService.StockOptionList();
+			return ResponseEntity.ok(stockOptionList);
+		} catch(Exception e) {
+			log.error("옵션 재고 목록 조회 실패: ", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
 }

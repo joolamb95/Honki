@@ -28,6 +28,25 @@
     text-align: left;
 }
 
+.stock-tabs {
+    display: flex;
+    gap: 20px;
+    padding: 6.5px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    color: #adadad;
+    cursor: pointer;
+    position: relative;
+}
+
+.tab-button.active {
+    color: #2D3748;
+}
+
 .search-section {
     padding: 10px 20px;
 }
