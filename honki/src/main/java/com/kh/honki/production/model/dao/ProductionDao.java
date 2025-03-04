@@ -8,7 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.honki.menu.model.vo.Menu;
 import com.kh.honki.option.model.vo.Option;
-import com.kh.honki.order.model.dto.OrderDetailDto;
+import com.kh.honki.order.model.vo.OrderDetailDTO;
+
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -49,7 +50,7 @@ public class ProductionDao {
 		sqlSession.delete("production.deleteOption", optionNo);
 	}
 
-	public List<OrderDetailDto> getOrderList(Map<String, Object> params) {
+	public List<OrderDetailDTO> getOrderList(Map<String, Object> params) {
 		return sqlSession.selectList("production.getOrderList", params);
 	}
 

@@ -7,7 +7,7 @@ interface OrderDetail {
     orderNo: number;        // number로 변경
     tableNo: number;        // number로 변경
     menuName: string;
-    amount: number;         // menuQuantity 대신 amount 사용
+    totalAmount: number;         // menuQuantity 대신 amount 사용
     optionName: string;     // null 허용 제거 (백엔드에서 '-' 처리)
     price: number;          // totalPrice 대신 price 사용
     orderDate: string;
@@ -204,7 +204,7 @@ const OrderDetails: React.FC = () => {
                                 <td>{order.orderNo}</td>
                                 <td>{order.tableNo}</td>
                                 <td>{order.menuName}</td>
-                                <td>{order.amount}</td>
+                                <td>{order.totalAmount}</td>
                                 <td>{order.optionName}</td>
                                 <td>{order.price.toLocaleString()}원</td>
                                 <td>{order.orderDate}</td>

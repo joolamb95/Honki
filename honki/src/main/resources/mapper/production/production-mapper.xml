@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="production">
+		<select id="getMenuList" resultType="menu">
+			SELECT
+				m.MENU_NO,
+				m.MENU_NAME,
+				m.MENU_PRICE,
+				m.MENU_IMG,
+				m.MENU_STATUS,
+				m.CATEGORY_NO,
+				c.CATEGORY_NAME as categoryName,
+				m.ENG_NAME
+			FROM MENU m
+			LEFT JOIN CATEGORY c ON m.CATEGORY_NO = c.CATEGORY_NO
+			ORDER BY m.MENU_NO DESC
+		</select>
+		
+		<insert id="addMenu" parameterType="menu">
+			<selectKey keyProperty="menuNo" resultType="int" order="BEFORE">
+				SELECT NVL(MAX(MENU_NO), 0) + 1 FROM MENU
+			</selectKey>
+			INSERT INTO MENU (
+				MENU_NO,
+				MENU_NAME,
+				MENU_PRICE,
+				MENU_IMG,
+				MENU_STATUS,
+				CATEGORY_NO,
+				ENG_NAME
+			) VALUES (
+				(SELECT NVL(MAX(MENU_NO), 0) + 1 FROM MENU),
+				#{menuName},
+				#{menuPrice},
+				#{menuImg},
+				#{menuStatus},
+				#{categoryNo},
+				#{engName}
+			)
+		</insert>
+		
+		<update id="updateMenu" parameterType="menu">
+			UPDATE MENU
+			SET
+				MENU_NAME = #{menuName},
+				MENU_PRICE = #{menuPrice},
+				MENU_IMG = #{menuImg},
+				MENU_STATUS = #{menuStatus},
+				CATEGORY_NO = #{categoryNo},
+				ENG_NAME = #{engName}
+			WHERE MENU_NO = #{menuNo}
+		</update>
+		
+		<delete id="deleteMenu" parameterType="int">
+			DELETE FROM MENU
+			WHERE MENU_NO = #{menuNo}
+		</delete>
+		
+		<select id="getOptionList" resultType="Option">
+			SELECT
+				OPTION_NO,
+				CATEGORY_NO,
+				OPTION_NAME,
+				OPTION_PRICE
+			FROM MENU_OPTION
+			ORDER BY OPTION_NO DESC
+		</select>
+		
+		<insert id="addOption" parameterType="option">
+			INSERT INTO MENU_OPTION (
+				OPTION_NO,
+				CATEGORY_NO,
+				OPTION_NAME,
+				OPTION_PRICE
+			) VALUES (
+				(SELECT NVL(MAX(OPTION_NO), 0) + 1 FROM MENU_OPTION),
+				#{categoryNo},
+				#{optionName},
+				#{optionPrice}
+			)
+			<selectKey keyProperty="optionNo" resultType="int" order="AFTER">
+				SELECT MAX(OPTION_NO) FROM MENU_OPTION
+			</selectKey>
+		</insert>
+		
+		<update id="updateOption" parameterType="Option">
+			UPDATE MENU_OPTION
+			SET 
+				CATEGORY_NO = #{categoryNo},
+				OPTION_NAME = #{optionName},
+				OPTION_PRICE = #{optionPrice}
+			WHERE OPTION_NO = #{optionNo}
+		</update>
+		
+		<delete id="deleteOption" parameterType="int">
+			DELETE FROM MENU_OPTION
+			WHERE OPTION_NO = #{optionNo}
+		</delete>
+		
+		<select id="getOrderList" parameterType="map" resultType="com.kh.honki.order.model.vo.OrderDetailDTO">
+			SELECT 
+				o.ORDER_NO as orderNo,
+				o.TABLE_NO as tableNo,
+				m.MENU_NAME as menuName,
+				od.AMOUNT as totalAmount,
+				NVL2(mo.OPTION_NAME, mo.OPTION_NAME, '-') as optionName,
+				od.PRICE as price,
+				TO_CHAR(o.ORDER_DATE, 'YYYY-MM-DD HH24:MI:SS') as orderDate
+			FROM 
+				ORDERS o
+			JOIN 
+				ORDERS_DETAIL od ON o.ORDER_NO = od.ORDER_NO
+			JOIN 
+				MENU m ON od.MENU_NO = m.MENU_NO
+			LEFT JOIN 
+				MENU_OPTION mo ON od.OPTION_NO = mo.OPTION_NO
+			WHERE 
+				1=1
+				<if test="startDate != null and endDate != null">
+					AND TRUNC(o.ORDER_DATE) BETWEEN 
+						TO_DATE(#{startDate}, 'YYYY-MM-DD')
+					AND 
+						TO_DATE(#{endDate}, 'YYYY-MM-DD')
+				</if>
+				<if test="searchCategory != null and searchTerm != null and searchTerm != ''">
+					<choose>
+						<when test="searchCategory == '주문 번호'">
+							AND o.ORDER_NO = #{searchTerm}
+						</when>
+						<when test="searchCategory == '테이블 번호'">
+							AND o.TABLE_NO = #{searchTerm}
+						</when>
+						<when test="searchCategory == '메뉴 이름'">
+							AND m.MENU_NAME LIKE '%' || #{searchTerm} || '%'
+						</when>
+					</choose>
+				</if>
+			ORDER BY 
+				o.ORDER_DATE DESC, o.ORDER_NO
+		</select>
+		
+</mapper>
+
+
+
+
+
+
+
+

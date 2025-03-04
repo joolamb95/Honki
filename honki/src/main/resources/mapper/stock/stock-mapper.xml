@@ -8,7 +8,7 @@
 				S.MENU_NO,
 				M.MENU_NAME,
 				S.STOCK_QUANTITY,
-				TO_CHAR(S.STOCK_LAST_UPDATE, 'YYYY-MM-DD HH24:MI:SS') AS STOCK_LAST_UPDATE,
+				TO_CHAR(S.STOCK_LAST_UPDATE, 'RRRR-MM-DD HH24:MI:SS') AS STOCK_LAST_UPDATE,
 				S.STOCK_STATUS
 			FROM
 				STOCK S
@@ -17,18 +17,34 @@
 				S.MENU_NO ASC
 		</select>
 		
+		<insert id="addStock" parameterType="int">
+			INSERT INTO STOCK (
+				MENU_NO,
+				STOCK_QUANTITY,
+				STOCK_STATUS,
+				STOCK_LAST_UPDATE
+			) VALUES (
+				#{menuNo},
+				0,
+				'EMPTY',
+				SYSDATE
+			)
+		</insert>
+		
 		<insert id="orderStock" parameterType="stockOrder">
 			INSERT INTO STOCK_ORDER (
 				ORDER_ID,
 				ORDER_DATE,
-				MENU_NO,
+				ITEM_NO,
+				ITEM_TYPE,
 				ORDER_QUANTITY,
 				ORDER_AMOUNT,
 				STATUS
 			) VALUES (
 				(SELECT NVL(MAX(ORDER_ID), 0) + 1 FROM STOCK_ORDER),
 				SYSDATE,
-				#{menuNo},
+				#{itemNo},
+				#{itemType},
 				#{orderQuantity},
 				#{orderAmount},
 				'POSTPONE'
@@ -39,22 +55,59 @@
 			UPDATE STOCK 
 			SET 
 				STOCK_QUANTITY = STOCK_QUANTITY + #{stockQuantity},
-				STOCK_LAST_UPDATE = SYSDATE
-			WHERE 
-				MENU_NO = #{menuNo}
+				STOCK_LAST_UPDATE = SYSDATE,
+				STOCK_STATUS = CASE
+					WHEN STOCK_QUANTITY + #{stockQuantity} = 0 THEN 'EMPTY'
+					WHEN EXISTS (
+						SELECT 1 
+						FROM STOCK_ORDER 
+						WHERE ITEM_NO = MENU_NO 
+						AND ITEM_TYPE = 'M' 
+						AND STATUS = 'POSTPONE'
+						AND ORDER_ID != (
+							SELECT MAX(ORDER_ID)
+							FROM STOCK_ORDER
+							WHERE ITEM_NO = MENU_NO
+							AND ITEM_TYPE = 'M'
+						)
+					) THEN 'POSTPONE'
+					ELSE '-'
+				END
+			WHERE MENU_NO = #{menuNo}
+		</update>
+		
+		<update id="updateStockStatus" parameterType="int">
+			UPDATE STOCK
+			SET STOCK_STATUS = CASE
+				WHEN STOCK_QUANTITY = 0 THEN 'EMPTY'
+				WHEN EXISTS (
+					SELECT 1 
+					FROM STOCK_ORDER 
+					WHERE ITEM_NO = MENU_NO 
+					AND ITEM_TYPE = 'M' 
+					AND STATUS = 'POSTPONE'
+				) THEN 'POSTPONE'
+				ELSE '-'
+			END
+			WHERE MENU_NO = #{menuNo}
 		</update>
 		
 		<select id="getPostponeOrders" resultType="stockOrder">
 			SELECT
 				o.ORDER_ID as orderId,
-				o.MENU_NO as menuNo,
-				m.MENU_NAME as menuName,
+				o.ITEM_NO as itemNo,
+				o.ITEM_TYPE as itemType,
+				CASE o.ITEM_TYPE 
+					WHEN 'M' THEN m.MENU_NAME
+					WHEN 'O' THEN op.OPTION_NAME
+				END as itemName,
 				o.ORDER_QUANTITY as orderQuantity,
 				o.ORDER_AMOUNT as orderAmount,
 				o.ORDER_DATE as orderDate,
 				o.STATUS as status
 			FROM STOCK_ORDER o
-			JOIN MENU m ON o.MENU_NO = m.MENU_NO
+			LEFT JOIN MENU m ON o.ITEM_NO = m.MENU_NO AND o.ITEM_TYPE = 'M'
+			LEFT JOIN MENU_OPTION op ON o.ITEM_NO = op.OPTION_NO AND o.ITEM_TYPE = 'O'
 			WHERE o.STATUS = 'POSTPONE'
 			ORDER BY o.ORDER_DATE DESC
 		</select>
@@ -62,16 +115,19 @@
 		<select id="getOrderHistory" resultType="stockOrder">
 			SELECT 
 				o.ORDER_ID as orderId,
-				o.ORDER_DATE as orderDate,
-				o.MENU_NO as menuNo,
-				m.MENU_NAME as menuName,
-				s.STOCK_QUANTITY as stockQuantity,
+				o.ITEM_NO as itemNo,
+				o.ITEM_TYPE as itemType,
+				CASE o.ITEM_TYPE 
+					WHEN 'M' THEN m.MENU_NAME
+					WHEN 'O' THEN op.OPTION_NAME
+				END as itemName,
 				o.ORDER_QUANTITY as orderQuantity,
 				o.ORDER_AMOUNT as orderAmount,
+				o.ORDER_DATE as orderDate,
 				o.STATUS as status
 			FROM STOCK_ORDER o
-			JOIN MENU m ON o.MENU_NO = m.MENU_NO
-			JOIN STOCK s ON o.MENU_NO = s.MENU_NO
+			LEFT JOIN MENU m ON o.ITEM_NO = m.MENU_NO AND o.ITEM_TYPE = 'M'
+			LEFT JOIN MENU_OPTION op ON o.ITEM_NO = op.OPTION_NO AND o.ITEM_TYPE = 'O'
 			WHERE o.STATUS = 'COMPLETED'
 			ORDER BY o.ORDER_DATE DESC
 		</select>
@@ -79,13 +135,19 @@
 		<select id="approveOrder" resultType="stockOrder">
 			SELECT
 				o.ORDER_ID as orderId,
-				o.MENU_NO as menuNo,
-				m.MENU_NAME as menuName,
+				o.ITEM_NO as itemNo,
+				o.ITEM_TYPE as itemType,
+				CASE o.ITEM_TYPE 
+					WHEN 'M' THEN m.MENU_NAME
+					WHEN 'O' THEN op.OPTION_NAME
+				END as itemName,
 				o.ORDER_QUANTITY as orderQuantity,
 				o.ORDER_AMOUNT as orderAmount,
-				o.ORDER_DATE as orderDate
+				o.ORDER_DATE as orderDate,
+				o.STATUS as status
 			FROM STOCK_ORDER o
-			JOIN MENU m ON o.MENU_NO = m.MENU_NO
+			LEFT JOIN MENU m ON o.ITEM_NO = m.MENU_NO AND o.ITEM_TYPE = 'M'
+			LEFT JOIN MENU_OPTION op ON o.ITEM_NO = op.OPTION_NO AND o.ITEM_TYPE = 'O'
 			WHERE o.ORDER_ID = #{orderId}
 		</select>
 		
@@ -95,16 +157,150 @@
 			WHERE ORDER_ID = #{orderId}
 		</update>
 		
+		<select id="getOrderById" resultType="stockOrder">
+			SELECT
+				ORDER_ID as orderId,
+				ITEM_NO as itemNo,
+				ITEM_TYPE as itemType
+			FROM STOCK_ORDER
+			WHERE ORDER_ID = #{orderId}
+		</select>
+		
 		<delete id="deleteOrder">
 			DELETE FROM STOCK_ORDER
 			WHERE ORDER_ID = #{orderId}
 		</delete>
+		
+		<delete id="deleteStock" parameterType="int">
+			DELETE FROM STOCK
+			WHERE MENU_NO = #{menuNo}
+		</delete>
+		
+		<delete id="deleteStockOrder" parameterType="int">
+			DELETE FROM STOCK_ORDER
+			WHERE ITEM_NO = #{menuNo}
+			AND ITEM_TYPE = 'M'
+		</delete>
+		
+		<update id="updateMenuStatusAfterCancel" parameterType="int">
+			UPDATE STOCK
+			SET STOCK_STATUS = CASE
+				WHEN STOCK_QUANTITY = 0 THEN 'EMPTY'
+				WHEN EXISTS (
+					SELECT 1 FROM STOCK_ORDER 
+					WHERE ITEM_NO = MENU_NO 
+					AND ITEM_TYPE = 'M' 
+					AND STATUS = 'POSTPONE'
+				) THEN 'POSTPONE'
+				ELSE '-'
+			END
+			WHERE MENU_NO = #{menuNo}
+		</update>
+		
+		<select id="optionList" resultType="option">
+			SELECT 
+				o.OPTION_NO,
+				o.OPTION_NAME,
+				o.OPTION_PRICE,
+				o.CATEGORY_NO,
+				NVL(s.STOCK_QUANTITY, 0) as STOCK_QUANTITY
+			FROM MENU_OPTION o
+			LEFT JOIN STOCK s ON o.OPTION_NO = s.MENU_NO AND s.STOCK_TYPE = 'O'
+		</select>
+		
+		<select id="stockOptionList" resultType="stockOption">
+			SELECT 
+				SO.OPTION_NO,
+				MO.OPTION_NAME,
+				SO.STOCK_OPTION_QUANTITY,
+				SO.STOCK_OPTION_STATUS,
+				TO_CHAR(SO.STOCK_OPTION_LAST_UPDATE, 'YYYY-MM-DD HH24:MI:SS') as STOCK_OPTION_LAST_UPDATE
+			FROM 
+				STOCK_OPTION SO
+				INNER JOIN MENU_OPTION MO ON SO.OPTION_NO = MO.OPTION_NO
+			ORDER BY 
+				SO.OPTION_NO ASC
+		</select>
+		
+		<update id="updateOptionStatusAfterCancel" parameterType="int">
+			UPDATE STOCK_OPTION
+			SET STOCK_OPTION_STATUS = CASE
+				WHEN STOCK_OPTION_QUANTITY = 0 THEN 'EMPTY'
+				WHEN EXISTS (
+					SELECT 1 FROM STOCK_ORDER 
+					WHERE ITEM_NO = OPTION_NO 
+					AND ITEM_TYPE = 'O' 
+					AND STATUS = 'POSTPONE'
+				) THEN 'POSTPONE'
+				ELSE '-'
+			END
+			WHERE OPTION_NO = #{optionNo}
+		</update>
+		
+		<update id="updateStockOptionQuantity" parameterType="stockOption">
+			UPDATE STOCK_OPTION 
+			SET 
+				STOCK_OPTION_QUANTITY = STOCK_OPTION_QUANTITY + #{stockOptionQuantity},
+				STOCK_OPTION_LAST_UPDATE = SYSDATE,
+				STOCK_OPTION_STATUS = CASE
+					WHEN STOCK_OPTION_QUANTITY + #{stockOptionQuantity} = 0 THEN 'EMPTY'
+					WHEN EXISTS (
+						SELECT 1 
+						FROM STOCK_ORDER 
+						WHERE ITEM_NO = OPTION_NO 
+						AND ITEM_TYPE = 'O' 
+						AND STATUS = 'POSTPONE'
+						AND ORDER_ID != (
+							SELECT MAX(ORDER_ID) 
+							FROM STOCK_ORDER 
+							WHERE ITEM_NO = OPTION_NO 
+							AND ITEM_TYPE = 'O'
+						)
+					) THEN 'POSTPONE'
+					ELSE '-'
+				END
+			WHERE OPTION_NO = #{optionNo}
+		</update>
+		
+		<insert id="addStockOption" parameterType="int">
+			INSERT INTO STOCK_OPTION (
+				OPTION_NO,
+				STOCK_OPTION_QUANTITY,
+				STOCK_OPTION_STATUS,
+				STOCK_OPTION_LAST_UPDATE
+			) VALUES (
+				#{optionNo},
+				0,
+				'EMPTY',
+				SYSDATE
+			)
+		</insert>
+		
+		<delete id="deleteStockOption" parameterType="int">
+			DELETE FROM STOCK_OPTION
+			WHERE OPTION_NO = #{optionNo}
+		</delete>
+		
+		<update id="decreaseMenuStock">
+			UPDATE STOCK
+			SET STOCK_QUANTITY = STOCK_QUANTITY - #{amount}
+			WHERE MENU_NO = (
+				SELECT MENU_NO
+				FROM ORDERS_DETAIL
+				WHERE ORDER_NO = #{orderNo}
+			)
+		</update>
+		
+		<update id="decreaseOptionStock">
+			UPDATE STOCK_OPTION 
+			SET STOCK_OPTION_QUANTITY = STOCK_OPTION_QUANTITY - 1
+			WHERE OPTION_NO = (
+				SELECT OPTION_NO 
+				FROM ORDERS_DETAIL 
+				WHERE ORDER_NO = #{orderNo}
+				AND OPTION_NO > 0
+			)
+		</update>
 </mapper>
-
-
-
-
-
-
 
 

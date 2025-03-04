@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.HttpStatus;
 
-import com.kh.honki.order.model.dto.OrderDetailDto;
+import com.kh.honki.order.model.vo.OrderDetailDTO;
 
 @Slf4j
 @RestController
@@ -131,7 +131,7 @@ public class ProductionController {
 				startDate, endDate, searchCategory, searchTerm);
 
 		try {
-			List<OrderDetailDto> orders = productionService.getOrderList(startDate, endDate, searchCategory, searchTerm);
+			List<OrderDetailDTO> orders = productionService.getOrderList(startDate, endDate, searchCategory, searchTerm);
 			log.info("조회된 주문 내역 수: {}", orders.size());
 			
 			if (orders.isEmpty()) {
