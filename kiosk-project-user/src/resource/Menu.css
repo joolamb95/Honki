@@ -24,19 +24,15 @@
  font-weight: bold;
  text-align: center;
  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
- 
-
 }
 
 /* ✅ 메뉴 리스트 (한 줄에 3개) */
 .menu-grid {
  display: grid;
  grid-template-columns: repeat(3, 1fr);
- gap: 30px;
  width: 100%;
  max-width: 1200px;
  justify-content: center;
- margin-bottom: 40px;
  padding-bottom: 20px;
 }
 
@@ -56,30 +52,34 @@
  flex-direction: column;
  align-items: center;
  justify-content: space-between;
- padding: 15px;
  margin: 30px;
+
 }
 
 /* ✅ 메뉴 카드 이미지 */
 .menu-img {
  width: 100%;
- height: 100%;
+height: 70%;
+z-index: 10;
 
 }
+
 .menu-list {
  display: flex;
- flex-wrap: wrap;
- 
+ flex-wrap: wrap; 
+ margin-top: 5px; /* ✅ 기존 20px 이상일 경우 줄이기 */
  align-items: center; /* ✅ 수직 정렬 */
  gap: 20px;
  width: 100%; /* ✅ 전체 너비 차지 */
  max-width: 1200px; /* ✅ 카드 최대 정렬 너비 설정 */
  margin: 80px; /* ✅ 중앙 정렬 */
+ margin-top: 5px; /* ✅ 리스트 위쪽 간격 줄이기 */
+ gap: 15px; /* ✅ 개별 메뉴 카드 간격 조정 */
 }
 
 /* ✅ 메뉴 이름 */
 .menu-name {
- font-size: 16px;
+ font-size: 14px;
  font-weight: bold;
  margin-bottom: 2px; /* ✅ 간격 최소화 */
  color: #ffdd99;
@@ -87,7 +87,7 @@
 
 /* ✅ 메뉴 가격 */
 .menu-price {
- font-size: 18px;
+ font-size: 16px;
  font-weight: bold;
  color: #ffd700; /* ✅ 골드 색상 */
  margin-top: 0px; /* ✅ 위 간격 최소화 */
@@ -98,7 +98,7 @@
  width: 30%;
  position: fixed; /* 🔥 컨테이너 내부에서 절대 위치 */
  bottom: 5%; /* 하단에서 20px 위 */
- margin-left: 45%;
+ margin-left: 50%;
  display: flex;
  gap: 15px;
  z-index: 10; /* 다른 요소 위에 표시 */
@@ -143,4 +143,48 @@
  .menu-grid {
    grid-template-columns: repeat(1, 1fr);
  }
+ .table-selection {
+  margin-bottom: 20px; /* 테이블 번호 선택 박스와 다른 요소 간의 간격을 설정 */
+  margin-top: 10px; /* 위로 올릴 부분, 원하는 만큼 조정 */
+}
+
+.table-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  z-index: 10; /* `z-index`를 설정하여 다른 요소들보다 위로 배치 */
+  position: relative; /* `z-index`를 활성화하려면 position을 설정해야 합니다. */
+}
+
+.category-button-wrapper {
+  margin-bottom: 15px; /* 버튼들 간의 간격을 조정 */
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+}
+
+.category-button2 {
+  margin-top: 20px;
+}
+
+.cate-button1,
+.cate-button2 {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: none;
+  background-color: #ff6600;
+  color: white;
+}
+
+.cate-button1:hover,
+.cate-button2:hover {
+  background-color: #ff4500;
+}
 }

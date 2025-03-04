@@ -3,7 +3,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface CartItem extends Menu {
   quantity: number;
-  selectedOptions: { name: string; price: number }[];
+  selectedOptions: {
+    optionNo: number;
+    name: string;
+    price: number;
+  }[];
+  tableNo: number;  // 추가 필드
 }
 
 interface CartState {

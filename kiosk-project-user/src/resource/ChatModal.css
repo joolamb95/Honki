@@ -1,0 +1,237 @@
+
+/* 닫기 버튼 스타일 */
+.chat-modal-close {
+    margin-top: 10px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.chat-modal-close:hover {
+    background-color: #cc0000;
+}
+
+/* ✅ 모달이 항상 최상위로 오도록 `z-index` 설정 */
+.chat-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;  /* ✅ z-index 높게 설정 */
+}
+
+/* ✅ 모달 내부 스타일 */
+.chat-modal-content {
+    margin-bottom: 300px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 500px;
+    height: 500px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 10000;  /* ✅ z-index 추가 */
+    bottom: 0;
+}
+
+/* 메시지 텍스트 스타일 */
+.chat-message {
+    color: black !important;  /* ✅ 글자색을 검정색으로 강제 설정 */
+    font-weight: bold;
+    background-color: #e0e0e0;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 5px 0;
+}
+
+/* 메시지 목록 스타일 */
+.chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: white; /* ✅ 메시지 배경을 하얀색으로 설정 */
+    border-radius: 5px;
+}
+
+/* 입력창 스타일 */
+.chat-input {
+    flex-grow: 1; /* 가로 너비 자동 확장 */
+    height: 40px;
+    width: 500PX;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    bottom: 43%;
+    position: absolute
+}
+
+/* 버튼 스타일 */
+.chat-send-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.chat-send-button:hover {
+    background-color: #0056b3;
+}
+
+/* ✅ 채팅 전체 컨테이너 */
+.chat-messages {
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ✅ 기본 메시지 스타일 */
+.chat-message {
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 60%;
+    word-break: break-word;
+    margin-bottom: 5px;
+    display: inline-block;
+}
+.chat-messages {
+    max-height: 350px; /* 기존보다 약간 키우기 */
+    overflow-y: auto;
+}
+
+/* ✅ 내가 보낸 메시지 (오른쪽 정렬) */
+.my-message {
+    align-self: flex-end;
+    background-color: #a1cfff;
+    color: white;
+    text-align: right;
+}
+
+/* ✅ 사장이 보낸 메시지 (왼쪽 정렬) */
+.other-message {
+    align-self: flex-start;
+    background-color: #e0e0e0;
+    color: black;
+    text-align: left;
+}
+
+/* ✅ 채팅 모달 제목 스타일 수정 */
+.chat-modal-content h2 {
+    color: white; /* ✅ 글자색을 흰색으로 설정 */
+    background-color: #333; /* ✅ 배경색 추가 */
+    padding: 10px;
+    text-align: center;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+/* ✅ "Chat - Table 1" 제목 스타일 */
+.chat-modal-content h3 {
+    color: white; /* ✅ 글자색을 흰색으로 설정 */
+    background-color: #444; /* ✅ 배경색 추가 */
+    padding: 8px;
+    text-align: center;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+/* ✅ 버튼 컨테이너 스타일 추가 */
+.chat-buttons {
+    display: flex;
+    justify-content: space-between; /* Send 왼쪽, 닫기 버튼 오른쪽 */
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 0%;
+}
+
+/* ✅ Send 버튼 스타일 */
+.chat-send-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* ✅ 닫기 버튼 스타일 */
+.chat-close-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.modal-title{
+    color: #333;
+}
+
+/* ✅ 입력 필드 스타일 */
+.chat-input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: auto;
+}
+
+/* ✅ 가상 키보드를 모달 하단에 고정 */
+.keyboard-wrapper {
+    width: 1336px;
+    position: absolute;
+    bottom: 100px;
+    background: white;
+    padding: 10px;
+}
+
+/* ✅ 제목과 X 버튼을 같은 줄에 배치 */
+.chat-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 20px; /* 좌우 패딩 추가 */
+    background: #333;
+    color: white;
+    border-radius: 10px 10px 0 0;
+    margin-top:-22px;
+    margin-left: -20px;
+}
+
+/* ✅ X 버튼 스타일 */
+.chat-close-x {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: white;
+    transition: color 0.2s ease-in-out;
+}
+
+.chat-close-x:hover {
+    color: red;
+}
+
+
+
+

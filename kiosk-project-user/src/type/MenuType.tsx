@@ -8,3 +8,10 @@ export type Menu = {
   categoryNo: number; // 카테고리 번호 (FK)
   categoryName?: string; // ✅ categoryName 직접 포함
 };
+
+export interface RecommendedMenu {
+    menuName: string;
+    menuImg: string;
+    menuPrice: number;
+  }
+  

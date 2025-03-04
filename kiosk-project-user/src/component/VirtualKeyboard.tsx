@@ -3,26 +3,22 @@ import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import "simple-keyboard-layouts/build/layouts/korean";
 import Hangul from "hangul-js";
-
 interface VirtualKeyboardProps {
   onChange: (input: string) => void;
   onSend: () => void;
   onClose: () => void;
 }
-
 const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onClose }) => {
   const [composingText, setComposingText] = useState<string>("");
   const [finalText, setFinalText] = useState<string>("");
   const [layout, setLayout] = useState<"default" | "shift">("default");
   const [layoutMode, setLayoutMode] = useState<"korean" | "english">("korean"); // 한/영 전환
   const [isShiftActive, setIsShiftActive] = useState(false);
-
   useEffect(() => {
     onChange(finalText + composingText);
   }, [composingText, finalText]);
-
   useEffect(() => {
-    // ✅ 실제 키보드 입력 감지
+    // :흰색_확인_표시: 실제 키보드 입력 감지
     const handlePhysicalKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         handleSend();
@@ -32,13 +28,11 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
         setComposingText((prev) => prev + event.key);
       }
     };
-
     window.addEventListener("keydown", handlePhysicalKeyPress);
     return () => {
       window.removeEventListener("keydown", handlePhysicalKeyPress);
     };
   }, []);
-
   const doubleConsonants: { [key: string]: string } = {
     "ㄱ": "ㄲ",
     "ㄷ": "ㄸ",
@@ -46,10 +40,8 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
     "ㅅ": "ㅆ",
     "ㅈ": "ㅉ"
   };
-
   const handleKeyPress = (input: string) => {
     let updatedText = composingText;
-
     if (input === "{bksp}") {
       if (composingText.length > 0) {
         updatedText = composingText.slice(0, -1);
@@ -78,11 +70,9 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
       }
       setLayout("default");
     }
-
     const assembled = Hangul.assemble(Hangul.disassemble(updatedText));
     setComposingText(assembled);
   };
-
   const handleSend = () => {
     if (finalText || composingText) {
       onSend();
@@ -90,7 +80,6 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
       setComposingText("");
     }
   };
-
   const koreanLayout = {
     default: [
       "- ! ? . * ( ) ",
@@ -107,7 +96,6 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
       "{lang} {space}"
     ]
   };
-
   const englishLayout = {
     default: [
       "- ! ? . * ( ) ",
@@ -124,7 +112,6 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
       "{lang} {space}"
     ]
   };
-
   return (
     <div className="keyboard-wrapper">
     <div className="keyboard-container">
@@ -137,7 +124,7 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
           "{enter}": "⏎",
           "{shift}": "⇧",
           "{space}": "␣",
-          "{lang}": "🌐" // 한/영 전환 버튼
+          "{lang}": ":자오선이_있는_지구:" // 한/영 전환 버튼
         }}
       />
       <div className="keyboard-buttons">
@@ -148,5 +135,4 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
     </div>
   );
 };
-
 export default VirtualKeyboard;
