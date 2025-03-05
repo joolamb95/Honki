@@ -105,36 +105,28 @@ const SalesAnalysis: React.FC = () => {
           <p className="text-center text-gray-500">데이터가 없습니다.</p>
         ) : (
           <div className="flex flex-wrap justify-between gap-6 mt-4">
-            {topMenus.map((categoryData: TopMenuCategory) => {
-              const categoryName = categoryData.category ?? "기타";
-              const categoryIcon = categoryIcons[categoryName] ?? categoryIcons["기타"];
+            {topMenus.map((categoryData: TopMenuCategory, index) => {
+              const categoryKey = categoryData.category ? categoryData.category : `category-${index}`;
 
               // ✅ 각 카테고리에서 가장 주문량이 높은 값 찾기 (width 비율 조정)
               const maxOrders = categoryData.items.length > 0
                 ? Math.max(...categoryData.items.map((item: MenuItem) => item.ORDERS))
                 : 1; // maxOrders가 0이 되지 않도록 기본값 설정
 
-              return (
-                <div key={categoryData.category} className="category-card w-1/3 p-4 bg-white rounded-lg shadow-md">
-                  {/* ✅ 카테고리 제목 및 아이콘 */}
-                  <h3 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
-                    {categoryIcon} {categoryName}
-                  </h3>
+                return (
+                  <div key={categoryKey} className="category-card w-1/3 p-4 bg-white rounded-lg shadow-md">
+                    <h3 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
+                      {categoryIcons[categoryData.category] ?? "🍽"} {categoryData.category ?? "기타"}
+                    </h3>
+
 
                   {/* ✅ 인기 메뉴 리스트 */}
                   <div className="mt-2 space-y-2">
-                    {categoryData.items.map((item: MenuItem) => (
-                      <div key={item.id} className="flex justify-between items-center border-b pb-2">
-                        {/* 순위: ex) 1위, 2위, 3위 */}
-                        <span className="text-gray-600 w-6">{item.rank}위</span>
-                        
-                        {/* 메뉴 이름 */}
-                        <span className="text-gray-800 flex-1">{item.NAME}</span>
-                        
-                        {/* 주문 건수: ex) 10건 */}
+                    {categoryData.items.map((item: MenuItem, idx) => (
+                      <div key={`${item.id}-${idx}`} className="flex justify-between items-center border-b pb-2">
+                        <span className="text-gray-600 w-6">{item.rank}위   </span>
+                        <span className="text-gray-800 flex-1">{item.NAME}   </span>
                         <span className="text-gray-800 w-10 text-right">{item.ORDERS}건</span>
-                        
-                        {/* 막대그래프 (가로 바) */}
                         <div className="w-24 h-2 bg-gray-200 rounded-full ml-2">
                           <div
                             className="h-2 bg-blue-600"

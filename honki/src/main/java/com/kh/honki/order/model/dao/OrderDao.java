@@ -1,9 +1,14 @@
 package com.kh.honki.order.model.dao;
 
 import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
+
 import com.kh.honki.order.model.vo.Order;
+import com.kh.honki.order.model.vo.OrderDetailDTO;
+import com.kh.honki.orderdetail.model.vo.OrdersDetail;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,11 +36,24 @@ public class OrderDao {
         return orderNo;
     }
 
-    public List<Order> getOrdersByTable(int tableNo) {
+    public List<OrderDetailDTO> getOrdersByTable(int tableNo) {
         return sqlSession.selectList("order.getOrdersByTable", tableNo);
     }
 
-    public List<Order> getAllOrders() {
+    public List<OrdersDetail> getAllOrders() {
         return sqlSession.selectList("order.getAllOrders");
     }
+
+
+	public List<Integer> getOrderNosByTableNo(int tableNo) {
+		return sqlSession.selectList("order.getOrderNosByTableNo",tableNo);
+	}
+    
+	public int clearOrdersByTable(List<Integer> list) {
+		return sqlSession.update("order.clearOrdersByTable", list);
+	}
+
+	public  int getTotalOrders() {
+		return sqlSession.selectOne("order.getTotalOrders");
+	}
 }

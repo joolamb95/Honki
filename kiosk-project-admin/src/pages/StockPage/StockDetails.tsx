@@ -4,28 +4,6 @@ import '../../style/StockDetails.css';
 import axios from 'axios';
 import StockOrder from './StockOrder';
 
-type OrderStatus = 'postpone' | 'completed'
-
-interface StockOrderItem {
-    orderId: number;
-    menuNo: number;
-    menuName: string;
-    orderQuantity: number;
-    orderAmount: number;
-    orderDate: string;
-    status: OrderStatus;
-}
-
-interface StockHistoryItem {
-    orderId: number;
-    orderDate: string;
-    menuNo: number;
-    menuName: string;
-    stockQuantity: number;
-    orderQuantity: number;
-    orderAmount: number;
-    status: string;
-}
 
 interface StockOrder {
     orderId: number;
@@ -40,8 +18,6 @@ interface StockOrder {
 
 const StockDetails: React.FC = () => {
     const [orders, setOrders] = useState<StockOrder[]>([]);
-    const [postponeOrders, setPostponeOrders] = useState<StockOrderItem[]>([]);
-    const [orderHistory, setOrderHistory] = useState<StockHistoryItem[]>([]);
     const [startDate, setStartDate] = useState('2025-01-01');
     const [endDate, setEndDate] = useState('2025-12-31');
     const [activeTab, setActiveTab] = useState<'postpone' | 'completed'>('postpone')
@@ -112,15 +88,6 @@ const StockDetails: React.FC = () => {
         }
     };
 
-    const handleSearch = () => {
-        // 검색 로직은 filteredData에서 처리됨
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
-    };
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
