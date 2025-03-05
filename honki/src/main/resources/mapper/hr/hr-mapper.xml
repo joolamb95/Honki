@@ -97,11 +97,22 @@
 </delete>
 
 <update id="softDeleteEmployee">
-    UPDATE EMPLOYEE
-    SET EMPLOYEE_STATUS = 'false',
-        RESIGN_DATE = SYSDATE,
-        LAST_UPDATE = SYSDATE
-    WHERE EMPLOYEE_NO = #{employeeNo}
+  <![CDATA[
+    BEGIN
+      UPDATE EMPLOYEE
+      SET EMPLOYEE_STATUS = 'false',
+          RESIGN_DATE = SYSDATE,
+          LAST_UPDATE = SYSDATE
+      WHERE EMPLOYEE_NO = #{employeeNo};
+
+      UPDATE EMPLOYEE_SALARY
+      SET JOB_TITLE = '퇴직자',
+          LAST_UPDATE = SYSDATE
+      WHERE EMPLOYEE_NO = #{employeeNo};
+
+      COMMIT;
+    END;
+  ]]>
 </update>
 
 
