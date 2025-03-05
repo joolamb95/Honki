@@ -1,16 +1,23 @@
 package com.kh.honki.order.model.service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.honki.order.model.dao.OrderDao;
 import com.kh.honki.order.model.vo.Order;
+import com.kh.honki.order.model.vo.OrderDetailDTO;
 import com.kh.honki.orderdetail.model.dao.OrdersDetailDao;
 import com.kh.honki.orderdetail.model.vo.OrdersDetail;
 import com.kh.honki.payment.model.dao.PaymentDao;
 import com.kh.honki.payment.model.vo.Payment;
+import com.kh.honki.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,14 +29,16 @@ public class OrderService {
     private final OrdersDetailDao ordersDetailDao;
     private final PaymentDao paymentDao;
 
-    public List<Order> getOrdersByTable(int tableNo) {
+    public List<OrderDetailDTO> getOrdersByTable(int tableNo) {
         return orderDao.getOrdersByTable(tableNo);
     }
 
-    public List<Order> getAllOrders() {
+    public List<OrdersDetail> getAllOrders() {
         return orderDao.getAllOrders();
     }
 
+	
+    
     @Transactional
     public int createOrder(Order order) {
         Payment payment = new Payment();
@@ -63,5 +72,59 @@ public class OrderService {
 
         return order.getOrderNo();
     }
+
+    public List<Integer> getOrderNosByTableNo(int tableNo) {
+    	return orderDao.getOrderNosByTableNo(tableNo);
+    }
+    
+	public int clearOrdersByTable(List<Integer> list) {
+		return orderDao.clearOrdersByTable(list);
+	}
+
+	public int getTotalOrders() {
+		return orderDao.getTotalOrders();
+	}
+
+	public int getTotalRevenue() {
+		return paymentDao.getTotalRevenue();
+	}
+
+	public List<Map<String, Object>> getMonthlyRevenues() {
+		List<Map<String, Object>> rawRevenues = paymentDao.getMonthlyRevenues();
+		 List<String> lastSixMonths = DateUtils.getLastSixMonths();
+		 
+		    Map<String, Integer> revenueMap = rawRevenues.stream()
+		    	    .collect(Collectors.toMap(m -> (String) m.get("MONTH"), 
+                            m -> ((BigDecimal) m.get("TOTAL_REVENUE")).intValue(), 
+                            (a, b) -> b));
+
+		    List<Map<String, Object>> result = new ArrayList<>();
+		    for (String month : lastSixMonths) {
+		        Map<String, Object> data = new HashMap<>();
+		        data.put("month", month);
+		        data.put("revenue", revenueMap.getOrDefault(month, 0));
+		        result.add(data);
+		    }
+		    return result;
+		
+	}
+
+	public List<Map<String, Object>> getRecentPaymentsWithTax() {
+		List<Map<String, Object>> payments = paymentDao.getRecentPayments();
+		
+		 return payments.stream().map(payment -> {
+	            BigDecimal amount = (BigDecimal) payment.get("AMOUNT");
+	            BigDecimal tax = amount.multiply(new BigDecimal("0.1"));
+	            BigDecimal netAmount = amount.subtract(tax);
+
+	            return Map.of(
+	                "title", payment.get("PAYMENT_METHOD"),
+	                "amount", amount.intValue(),
+	                "tax", "10%",
+	                "total", netAmount.intValue()
+	            );
+	        }).collect(Collectors.toList());
+	}
+
 
 }

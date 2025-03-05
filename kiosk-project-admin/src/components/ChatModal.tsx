@@ -1,45 +1,82 @@
 import React, { useEffect, useRef, useState } from "react";
-import "../style/ChatModal.css";  // ✅ 새 CSS 파일 임포트
+import "../style/ChatModal.css";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store";
+import { addMessage, setMessages } from "../slice/ChatSlice";
 
 interface ChatModalProps {
-  tableNumber: number | null;
-  messages: { sender: string; text: string }[];
-  onSendMessage: (tableNumber: number, message: string) => void;
+  tableNo: number;
+  onSendMessage: (tableNo: number, content: string) => void;
   onClose: () => void;
 }
-const ChatModal: React.FC<ChatModalProps> = ({ tableNumber, messages, onSendMessage, onClose }) => {
-  if (tableNumber === null) return null;  // :흰색_확인_표시: tableNumber가 null이면 렌더링하지 않음
-  const [inputText, setInputText] = useState("");  // :흰색_확인_표시: useState는 항상 같은 순서
-  const chatEndRef = useRef<HTMLDivElement | null>(null);  // :흰색_확인_표시: useRef를 뒤로 이동시키지 않음
+
+const ChatModal: React.FC<ChatModalProps> = ({ tableNo, onSendMessage, onClose }) => {
+  const dispatch = useDispatch();
+  const chatMessages = useSelector((state: RootState) => state.chat.messages[tableNo] || []);
+  const [inputText, setInputText] = useState("");
+  const chatWindowRef = useRef<HTMLDivElement | null>(null);
+
+  // ✅ 환경 변수에서 API URL 불러오기
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+  // 기존 메시지 불러오기
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  const handleSendMessage = () => {
-    const trimmedMessage = inputText.trim();
-    if (trimmedMessage === "") return;
-    onSendMessage(tableNumber, trimmedMessage);
-    setInputText("");
-  };
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSendMessage();
+    if (!apiBaseUrl) {
+      console.error("🚨 API Base URL이 설정되지 않았습니다.");
+      return;
     }
+
+    fetch(`${apiBaseUrl}/honki/chat/${tableNo}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("📩 기존 메시지 불러오기 성공:", data);
+        dispatch(setMessages({ tableNo, messages: data }));
+      })
+      .catch((err) => console.error("🚨 기존 메시지 불러오기 실패:", err));
+  }, [tableNo, dispatch, apiBaseUrl]);
+
+  const handleSendMessage = () => {
+    if (!inputText.trim()) return;
+
+    console.log("[사장님] 메시지 전송:", inputText.trim());
+
+    const newMessage = {
+      tableNo,
+      sender: "owner",
+      content: inputText.trim(),
+      timestamp: Date.now(),
+    };
+
+    // Redux에 메시지 추가
+    dispatch(addMessage(newMessage));
+    // Hall에서 관리하는 WebSocket 연결을 통해 메시지 전송
+    onSendMessage(tableNo, inputText.trim());
+    setInputText("");
+
+    // 메시지 전송 후 스크롤 조정
+    setTimeout(() => {
+      if (chatWindowRef.current) {
+        chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+      }
+    }, 100);
   };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
         <div className="chat-header">
-          <h2>테이블 {tableNumber}</h2>
+          <h2>{`테이블 ${tableNo}`}</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
-        <div className="chat-window">
-          {messages.map((msg, index) => (
-            <div key={index} className={`chat-message ${msg.sender === "owner" ? "owner-message" : "guest-message"}`}>
-              {msg.text}
+        <div className="chat-window" ref={chatWindowRef}>
+          {chatMessages.map((msg, index) => (
+            <div
+              key={index}
+              className={`chat-message ${msg.sender === "owner" ? "owner-message" : "guest-message"}`}
+            >
+              {msg.content}
             </div>
           ))}
-          <div ref={chatEndRef} /> {/* :흰색_확인_표시: useRef 사용 위치 유지 */}
         </div>
         <div className="chat-input-container">
           <input
@@ -48,12 +85,15 @@ const ChatModal: React.FC<ChatModalProps> = ({ tableNumber, messages, onSendMess
             placeholder="메시지 입력..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={handleKeyDown}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
           />
-          <button className="chat-send-button" onClick={handleSendMessage}>보내기</button>
+          <button className="chat-send-button" onClick={handleSendMessage}>
+            보내기
+          </button>
         </div>
       </div>
     </div>
   );
 };
+
 export default ChatModal;

@@ -79,27 +79,6 @@ const AddMenu: React.FC = () => {
         resetForm();  // 폼 초기화 추가
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setMenuForm(prev => ({
-                    ...prev,
-                    menuImg: reader.result as string
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleImageDelete = () => {
-        setMenuForm(prev => ({
-            ...prev,
-            menuImg: ''
-        }));
-    };
-
     // 저장 후 모달 닫기 수정
     const handleSubmit = async () => {
         try {
@@ -280,37 +259,7 @@ const AddMenu: React.FC = () => {
                             >×</button>
                         </div>
                         <div className="modal-body">
-                            {/* <div className="form-group">
-                                <label>메뉴 이미지</label>
-                                <div className="image-upload-container">
-                                    {menuForm.menuImg ? (
-                                        <div className="image-preview">
-                                            <img 
-                                                src={menuForm.menuImg} 
-                                                alt="메뉴 이미지" 
-                                                className="preview-image"
-                                            />
-                                            <button 
-                                                type="button"
-                                                className="image-delete-btn"
-                                                onClick={handleImageDelete}
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="upload-box">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                id="image-upload"
-                                                className="image-input"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div> */}
+                            
                             <div className="form-group">
                                 <label>메뉴 이미지</label>
                                 <input 
@@ -448,49 +397,6 @@ const AddMenu: React.FC = () => {
                             >×</button>
                         </div>
                         <div className="modal-body">
-                            {/* <div className="form-group">
-                                <label>메뉴 이미지</label>
-                                <div className="image-upload-container">
-                                    {modifyForm.menuImg ? (
-                                        <div className="image-preview">
-                                            <img 
-                                                src={modifyForm.menuImg} 
-                                                alt="메뉴 이미지" 
-                                                className="preview-image"
-                                            />
-                                            <button 
-                                                type="button"
-                                                className="image-delete-btn"
-                                                onClick={() => setModifyForm(prev => ({...prev, menuImg: ''}))}
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="upload-box">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => {
-                                                            setModifyForm(prev => ({
-                                                                ...prev,
-                                                                menuImg: reader.result as string
-                                                            }));
-                                                        };
-                                                        reader.readAsDataURL(file);
-                                                    }
-                                                }}
-                                                id="modify-image-upload"
-                                                className="image-input"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div> */}
                             <div className="form-group">
                                 <label>메뉴 이미지</label>
                                 <input 

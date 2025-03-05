@@ -12,24 +12,11 @@ interface StockItem {
     stockType: 'M' | 'O';
 }
 
-interface MenuOption {
-    optionNo: number;
-    optionName: string;
-    optionPrice: number;
-    categoryNo: number;
-    stockQuantity: number;
-}
-
 interface OrderQuantity {
     [key: number]: number;
 }
 
-interface OrderData {
-    itemNo: number;
-    itemType: 'M' | 'O';
-    orderQuantity: number;
-    orderAmount: number;
-}
+
 
 interface StockOption {
     optionNo: number;
@@ -47,9 +34,6 @@ const StockOrder: React.FC = () => {
     const [searchCategory, setSearchCategory] = useState('전체');
     const [menuOrderQuantities, setMenuOrderQuantities] = useState<OrderQuantity>({});
     const [optionOrderQuantities, setOptionOrderQuantities] = useState<OrderQuantity>({});
-    const [selectedItem, setSelectedItem] = useState<any>(null);
-    const [quantity, setQuantity] = useState(1);
-    const [isOption, setIsOption] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 

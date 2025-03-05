@@ -1,5 +1,6 @@
 package com.kh.honki.finance.model.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.kh.honki.finance.model.dao.FinanceDao;
 import com.kh.honki.finance.model.vo.Expend;
+import com.kh.honki.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,8 +108,28 @@ public class FinanceService {
 	    log.debug("최종 반환 데이터 : {}",result);
 	    return result;
 	}
-	
-	
-	
+
+	public int getTotalExpends() {
+		return dao.getTotalExpends();
+	}
+
+	public List<Map<String, Object>> getMonthlyExpenses() {
+		List<Map<String, Object>> rawExpenses = dao.getMonthlyExpenses();
+		
+		List<String> lastSixMonths = DateUtils.getLastSixMonths(); // ✅ 공통 메소드 사용
+	    Map<String, Integer> expenseMap = rawExpenses.stream()
+	    	    .collect(Collectors.toMap(m -> (String) m.get("MONTH"), 
+                        m -> ((BigDecimal) m.get("TOTAL_EXPEND")).intValue(), 
+                        (a, b) -> b));
+
+	    List<Map<String, Object>> result = new ArrayList<>();
+	    for (String month : lastSixMonths) {
+	        Map<String, Object> data = new HashMap<>();
+	        data.put("month", month);
+	        data.put("expense", expenseMap.getOrDefault(month, 0));
+	        result.add(data);
+	    }
+	    return result;
+	}
 	
 }

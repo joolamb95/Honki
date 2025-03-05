@@ -1,11 +1,119 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../../style/Dashboard.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+
+interface MonthlyData {
+  month: string;
+  expense: number;
+  revenue: number;
+}
+
+
+interface Payment {
+  title: string;
+  amount: number;
+  tax: string;
+  total: number;
+}
+
 
 const Dashboard: React.FC = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 지출 정산 내역 데이터 관리
+  const [settlements, setSettlements] = useState<Payment[]>([]);
+
+
+  // 지출 정산 내역 데이터 백엔드 요청 API
+  useEffect(() => {
+    const fetchSettlements = async () => {
+      try {
+        const response = await axios.get<Payment[]>("http://localhost:8080/honki/api/orders/recent-payments");
+        setSettlements(response.data);
+      } catch (error) {
+        console.error("지출 내역 가져오기 실패:", error);
+      }
+    };
+
+    fetchSettlements();
+  }, []);
+
+
+  // 매출 대비 지출 그래프 데이터 관리
+  const [chartData, setChartData] = useState<MonthlyData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 매출 대비 지출 데이터 백엔드 요청 API
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const [expensesRes, revenuesRes] = await Promise.all([
+          axios.get<MonthlyData[]>("http://localhost:8080/honki/finance/monthly-expenses"),
+          axios.get<MonthlyData[]>("http://localhost:8080/honki/api/orders/monthly-revenues"),
+        ]);
+
+        const expenses = expensesRes.data;
+        const revenues = revenuesRes.data;
+
+        // 월별 데이터 매칭
+        const months = [...new Set([...expenses.map((e: MonthlyData) => e.month), ...revenues.map((r: MonthlyData) => r.month)])].sort();
+        const formattedData = months.map(month => ({
+          month,
+          expense: expenses.find((e: MonthlyData) => e.month === month)?.expense || 0,
+          revenue: revenues.find((r: MonthlyData) => r.month === month)?.revenue || 0
+        }));
+
+        setChartData(formattedData);
+      } catch (error) {
+        console.error("데이터 가져오기 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChartData();
+  }, []);
+
+ // ✅ 총 매출액과 총 지출액 계산 (chartData 활용)
+ const totalRevenue = chartData.reduce((sum, data) => sum + data.revenue, 0);
+ const totalExpends = chartData.reduce((sum, data) => sum + data.expense, 0);
+
+  // 매출 데이터 상태 관리
+  const [salesData, setSalesData] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    netProfit: 0,
+    // totalVisitors: 0,
+  });
+
+  // 대시보드 데이터 불러오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 여러 개의 API를 병렬로 호출
+        const [revenueRes, ordersRes, expendsRes] = await Promise.all([
+          axios.get("http://localhost:8080/honki/api/orders/totalRevenue"),
+          axios.get("http://localhost:8080/honki/api/orders/totalOrders"),
+          axios.get("http://localhost:8080/honki/finance/totalExpends"),
+        ]);
+
+        const totalRevenue = revenueRes.data;  // 총 매출액
+        const totalOrders = ordersRes.data;    // 총 주문량
+        const totalExpends = expendsRes.data;  // 총 지출액
+        const netProfit = totalRevenue - totalExpends; // 순이익
+
+        setSalesData({ totalRevenue, totalOrders, netProfit });
+      } catch (error) {
+        console.error("데이터 가져오기 실패:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
   return (
     <div className="dashboard">
@@ -23,50 +131,56 @@ const Dashboard: React.FC = () => {
           <div className="today-sales">
             <h2>오늘의 매출 정보</h2>
             <div className="sales-cards">
-              <SalesCard title="총 매출액" value="$1k" percentage="+8%" bgColor="#FFE2E5" iconColor="#FA5A7D" />
-              <SalesCard title="총 주문량" value="300" percentage="+5%" bgColor="#FFF4DE" iconColor="#FF947A" />
-              <SalesCard title="예약 단체 손님" value="5" percentage="+1.2%" bgColor="#DCFCE7" iconColor="#3CD856" />
-              <SalesCard title="방문 손님" value="42" percentage="+0.5%" bgColor="#F3E8FF" iconColor="#BF83FF" />
+              <SalesCard title="총 매출액" value={`₩${salesData.totalRevenue.toLocaleString()}`} percentage="+8%" bgColor="#FFE2E5" iconColor="#FA5A7D" />
+              <SalesCard title="총 주문량" value={`${salesData.totalOrders}`} percentage="+5%" bgColor="#FFF4DE" iconColor="#FF947A" />
+              <SalesCard title="순 이익" value={`₩${salesData.netProfit.toLocaleString()}`} percentage="+1.2%" bgColor="#DCFCE7" iconColor="#3CD856" />
+              {/* <SalesCard title="방문 손님" value="0명" percentage="+0.5%" bgColor="#F3E8FF" iconColor="#BF83FF" /> */}
             </div>
           </div>
 
         <div className="inform-cards">
-          {/* 매출 대비 지출 정보 */}
+          {/* 매출 대비 지출 정보 차트 컨테이너 */}
         <div className="chart-container">
           <div className="chart-card">
             <div className="chart-title">수입 대비 지출 현황</div>
 
-            <div className="chart-bars">
-              {["Jan", "Feb", "Mar", "Apr", "May", "June", "July"].map(
-                (month, index) => (
-                  <div key={index} className="chart-group">
-                    <div className="chart-label">{month}</div>
-                    <div className="bar-container">
-                      <div className="bar-income"></div>
-                      <div className="bar-expense"></div>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
+            {loading ? (
+          <p>로딩 중...</p>
+        ) : chartData.length === 0 ? (
+          <p>데이터가 없습니다</p>
+        ) : (
+          <div className="chart-bars">
+            {chartData.map(({ month, revenue, expense }, index) => (
+              <div key={index} className="chart-group">
+                <div className="chart-label">{month}</div>
+                <div className="bar-container">
+                  <div className="bar-income" style={{ height: `${revenue / 1000}px` }}></div>
+                  <div className="bar-expense" style={{ height: `${expense / 1000}px` }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
             <div className="summary">
+              {/* 총 매출액 (Revenue) */}
               <div className="summary-item">
                 <div className="summary-icon income-icon"></div>
-                <div className="summary-info">
-                  <div className="summary-title">총 지출액</div>
-                  <div className="summary-subtitle">월별</div>
-                </div>
-                <div className="summary-value income">8.823</div>
-              </div>
-
-              <div className="summary-item">
-                <div className="summary-icon expense-icon"></div>
                 <div className="summary-info">
                   <div className="summary-title">총 매출액</div>
                   <div className="summary-subtitle">월별</div>
                 </div>
-                <div className="summary-value expense">12.122</div>
+                <div className="summary-value income">₩ {totalRevenue.toLocaleString()}</div>
+              </div>
+
+              {/* 총 지출액 (Expense) */}      
+              <div className="summary-item">
+                <div className="summary-icon expense-icon"></div>
+                <div className="summary-info">
+                  <div className="summary-title">총 지출액</div>
+                  <div className="summary-subtitle">월별</div>
+                </div>
+                <div className="summary-value expense">₩ {totalExpends.toLocaleString()}</div>
               </div>
             </div>
           </div>
@@ -83,11 +197,19 @@ const Dashboard: React.FC = () => {
                 <span>실수령액</span>
               </div>
               <div className="table-body">
-                <TableRow title="토스 페이" amount="130,000" tax="10%" total="117,000" />
-                <TableRow title="카카오 페이" amount="225,000" tax="10%" total="202,500" />
-                <TableRow title="카카오 페이" amount="119,000" tax="10%" total="107,100" />
-                <TableRow title="카카오 페이" amount="268,000" tax="10%" total="241,200" />
-                <TableRow title="네이버 페이" amount="69,000" tax="10%" total="62,100" />
+              {settlements.length === 0 ? (
+                <p>데이터가 없습니다</p>
+              ) : (
+                settlements.map((payment, index) => (
+                  <TableRow
+                    key={index}
+                    title={payment.title}
+                    amount={payment.amount.toLocaleString()}
+                    tax={payment.tax}
+                    total={payment.total.toLocaleString()}
+                  />
+                ))
+              )}
               </div>
             </div>
           </div>
@@ -121,9 +243,9 @@ const TableRow: React.FC<{ title: string; amount: string; tax: string; total: st
   return (
     <div className="table-row">
       <span>{title}</span>
-      <span>{amount}</span>
+      <span>₩ {amount}</span>
       <span>{tax}</span>
-      <span>{total}</span>
+      <span>₩ {total}</span>
     </div>
   );
 };
