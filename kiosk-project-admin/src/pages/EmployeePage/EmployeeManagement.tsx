@@ -29,6 +29,8 @@ const EmployeeManagement: React.FC = () => {
 
   // 필터링: 검색어와 직급 필터 적용
   const filteredEmployees = employees.filter((employee) => {
+    // EMPLOYEE_STATUS가 false면(비활성화) 화면에 표시하지 않음
+    if (!employee.employeeStatus) return false;
     const matchesSearch =
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (employee.salary?.jobTitle && employee.salary?.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -85,11 +87,11 @@ const EmployeeManagement: React.FC = () => {
         name: '',
         birthDate: '',
         gender: '',
-        phone: '',
+        phone: '010xxxxxxxx',
         address: '',
         hireDate: '',
         resignDate: '',
-        employeeStatus: true,
+        employeeStatus: 'true',
         salary: {
           jobTitle: '',
           baseSalary: 0,
@@ -199,14 +201,16 @@ const EmployeeManagement: React.FC = () => {
       return;
     }
     
-    const confirmed = window.confirm("정말 삭제하시겠습니까?");
+    const confirmed = window.confirm("정말 삭제하시겠습니까?.");
     if (!confirmed) {
       return;
     }
     
     try {
       console.log("🔹 사원 삭제 요청:", employeeNo);
+      // 백엔드의 소프트 삭제 엔드포인트 호출 (delete 메서드 내부에서 소프트 삭제를 수행하도록 변경)
       await axios.delete(`http://localhost:8080/honki/api/employees/${employeeNo}`);
+      // 삭제 후 프론트엔드 목록에서 제외
       setEmployees((prev) => prev.filter((employee) => employee.employeeNo !== employeeNo));
     } catch (error) {
       console.error("🚨 사원 삭제 실패:", error);

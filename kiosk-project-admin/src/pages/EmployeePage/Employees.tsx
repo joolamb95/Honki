@@ -18,7 +18,7 @@ export interface Employee {
   phone: string;
   hireDate: string;
   resignDate?: string;
-  employeeStatus: boolean;
+  employeeStatus: string;
   birthDate?: string;
   gender?: string;
   email?: string;

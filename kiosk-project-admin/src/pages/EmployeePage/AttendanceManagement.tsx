@@ -16,6 +16,7 @@ interface Attendance {
   clockOut: string;
   workHours: string;
   absenceStatus: string; // ✅ 지각, 결석 상태 저장
+
 }
 
 const AttendanceManagement: React.FC = () => {
@@ -497,7 +498,12 @@ const AttendanceManagement: React.FC = () => {
           {paginatedAttendances.map((attendance) => (
             <tr key={attendance.attendanceNo}>
               <td>{attendance.employeeNo}</td>
-              <td>{attendance.name}</td>
+              <td>
+                {attendance.name}
+                {employees.find(emp => emp.employeeNo === attendance.employeeNo)?.employeeStatus === "false" && (
+                  <span className="resigned-label"> (퇴사)</span>
+                )}
+              </td>
               <td>{attendance.jobTitle}</td>
               <td>{attendance.workDate || currentDate}</td>
               <td>

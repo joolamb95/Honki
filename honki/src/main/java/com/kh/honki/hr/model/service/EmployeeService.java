@@ -40,9 +40,11 @@ public class EmployeeService {
         employeeDao.updateEmployee(employee);
     }
 
-    public void deleteEmployee(int employeeNo) {
-        employeeDao.deleteEmployee(employeeNo);
+    public void softDeleteEmployee(int employeeNo) {
+        // 사원 레코드를 물리적으로 삭제하지 않고, 상태를 업데이트하여 비활성화함
+        employeeDao.softDeleteEmployee(employeeNo);
     }
+
 
     // ✅ 새 직원 추가 시 자동으로 근태 정보도 추가
     private void addAttendanceForNewEmployee(int employeeNo) {

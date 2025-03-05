@@ -45,7 +45,8 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     @CrossOrigin(origins = {"http://localhost:5173"})
     public void deleteEmployee(@PathVariable int id) {
-        employeeService.deleteEmployee(id);
+        employeeService.softDeleteEmployee(id);
     }
+
     
 }
