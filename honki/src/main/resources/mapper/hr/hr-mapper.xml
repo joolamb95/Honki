@@ -33,7 +33,9 @@
            S.JOB_TITLE, S.BASE_SALARY, S.BONUS, S.TOTAL_SALARY, S.LAST_UPDATE AS SALARY_LAST_UPDATE, S.PAYMENT_DATE
     FROM EMPLOYEE E
     LEFT JOIN EMPLOYEE_SALARY S ON E.EMPLOYEE_NO = S.EMPLOYEE_NO
+    WHERE E.EMPLOYEE_STATUS = 'true'
 </select>
+
 
 
 	
@@ -94,10 +96,14 @@
     DELETE FROM EMPLOYEE_SALARY WHERE EMPLOYEE_NO=#{employeeNo}
 </delete>
 
-<!-- ✅ 사원 데이터 삭제 -->
-<delete id="deleteEmployee">
-    DELETE FROM EMPLOYEE WHERE EMPLOYEE_NO=#{employeeNo}
-</delete>
+<update id="softDeleteEmployee">
+    UPDATE EMPLOYEE
+    SET EMPLOYEE_STATUS = 'false',
+        RESIGN_DATE = SYSDATE,
+        LAST_UPDATE = SYSDATE
+    WHERE EMPLOYEE_NO = #{employeeNo}
+</update>
+
 
 
     

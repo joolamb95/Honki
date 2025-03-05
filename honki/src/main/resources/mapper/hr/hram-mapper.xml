@@ -6,20 +6,23 @@
 
     <!-- 모든 근태 조회 -->
    <select id="findAllAttendances" resultMap="AttendanceResult">
-    SELECT DISTINCT
-        A.ATTENDANCE_NO, 
-        A.EMPLOYEE_NO, 
-        E.NAME,  
-        S.JOB_TITLE,  
-        A.WORK_DATE, 
-        A.CLOCK_IN, 
-        A.CLOCK_OUT, 
-        A.WORK_HOURS, 
-        A.ABSENCE_STATUS
-    FROM ATTENDANCE A
-    LEFT JOIN EMPLOYEE E ON A.EMPLOYEE_NO = E.EMPLOYEE_NO
-    LEFT JOIN EMPLOYEE_SALARY S ON A.EMPLOYEE_NO = S.EMPLOYEE_NO
+  SELECT DISTINCT
+    A.ATTENDANCE_NO,
+    A.EMPLOYEE_NO,
+    E.NAME,
+    E.EMPLOYEE_STATUS,       <!-- 추가 -->
+    S.JOB_TITLE,
+    A.WORK_DATE,
+    A.CLOCK_IN,
+    A.CLOCK_OUT,
+    A.WORK_HOURS,
+    A.ABSENCE_STATUS
+  FROM ATTENDANCE A
+  LEFT JOIN EMPLOYEE E ON A.EMPLOYEE_NO = E.EMPLOYEE_NO
+  LEFT JOIN EMPLOYEE_SALARY S ON A.EMPLOYEE_NO = S.EMPLOYEE_NO
 </select>
+
+
 
 
 <resultMap id="AttendanceResult" type="attendance">
@@ -32,6 +35,7 @@
     <result property="clockOut" column="CLOCK_OUT"/>
     <result property="workHours" column="WORK_HOURS"/>
     <result property="absenceStatus" column="ABSENCE_STATUS"/>
+    <result property="employeeStatus" column="EMPLOYEE_STATUS"/>
 </resultMap>
 
 
