@@ -2,6 +2,7 @@ package com.kh.honki.order.model.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,21 +111,30 @@ public class OrderService {
 	}
 
 	public List<Map<String, Object>> getRecentPaymentsWithTax() {
-		List<Map<String, Object>> payments = paymentDao.getRecentPayments();
-		
-		 return payments.stream().map(payment -> {
-	            BigDecimal amount = (BigDecimal) payment.get("AMOUNT");
-	            BigDecimal tax = amount.multiply(new BigDecimal("0.1"));
-	            BigDecimal netAmount = amount.subtract(tax);
+	    List<Map<String, Object>> payments = paymentDao.getRecentPayments();
 
-	            return Map.of(
-	                "title", payment.get("PAYMENT_METHOD"),
-	                "amount", amount.intValue(),
-	                "tax", "10%",
-	                "total", netAmount.intValue()
-	            );
-	        }).collect(Collectors.toList());
+	    if (payments == null || payments.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+
+	    return payments.stream().map(payment -> {
+	        // Null 체크 및 타입 변환
+	        BigDecimal amount = payment.get("AMOUNT") != null
+	                ? new BigDecimal(payment.get("AMOUNT").toString()) 
+	                : BigDecimal.ZERO;
+
+	        BigDecimal tax = amount.multiply(new BigDecimal("0.1")); // 세금 10%
+	        BigDecimal netAmount = amount.subtract(tax); // 실수령액
+
+	        return Map.of(
+	            "title", payment.get("PAYMENT_METHOD") != null ? payment.get("PAYMENT_METHOD") : "신용카드",
+	            "amount", amount.intValue(),
+	            "tax", "10%",  // 세금은 10%로 고정
+	            "total", netAmount.intValue()
+	        );
+	    }).collect(Collectors.toList());
 	}
+
 
 
 }

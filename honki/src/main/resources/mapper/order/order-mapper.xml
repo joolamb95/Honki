@@ -6,12 +6,12 @@
 	   <!-- 주문 생성 -->
    <insert id="insertOrder" parameterType="order">
         INSERT INTO ORDERS (ORDER_NO, TABLE_NO, PAYMENT_ID, TOTAL_PRICE, ORDER_DATE)
-        VALUES (ORDER_SEQ.NEXTVAL, #{tableNo}, #{paymentId}, #{totalPrice}, SYSDATE)
+        VALUES (SEQ_ORDER_NO.NEXTVAL, #{tableNo}, #{paymentId}, #{totalPrice}, SYSDATE)
     </insert>
 
     <!-- 방금 생성된 ORDER_NO 가져오기 -->
     <select id="getLastOrderNo" resultType="int">
-        SELECT ORDER_SEQ.CURRVAL FROM DUAL
+        SELECT SEQ_ORDER_NO.CURRVAL FROM DUAL
     </select>
 
 

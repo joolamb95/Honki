@@ -87,7 +87,7 @@ return acc + itemTotal + subItemTotal;
             tableData.orderItems.map((item, index) => (
               <div key={index} className="order-item">
                 <span>{item.name} x {item.quantity}</span>
-                <span>{item.price ? (item.price * item.quantity).toLocaleString() + "원" : "-"}</span>
+                <span>{item.price ? (item.price).toLocaleString() + "원" : "-"}</span>
                 
                 {/* ✅ subItems가 존재할 경우만 표시 */}
                 {item.subItems && item.subItems.length > 0 && (

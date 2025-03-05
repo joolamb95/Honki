@@ -3,56 +3,46 @@ import "../style/ChatModal.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { addMessage, setMessages } from "../slice/ChatSlice";
-
 interface ChatModalProps {
   tableNo: number;
   onSendMessage: (tableNo: number, content: string) => void;
   onClose: () => void;
 }
-
 const ChatModal: React.FC<ChatModalProps> = ({ tableNo, onSendMessage, onClose }) => {
   const dispatch = useDispatch();
   const chatMessages = useSelector((state: RootState) => state.chat.messages[tableNo] || []);
   const [inputText, setInputText] = useState("");
   const chatWindowRef = useRef<HTMLDivElement | null>(null);
-
-  // ✅ 환경 변수에서 API URL 불러오기
+  //환경 변수에서 API URL 불러오기
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
   // 기존 메시지 불러오기
   useEffect(() => {
     if (!apiBaseUrl) {
-      console.error("🚨 API Base URL이 설정되지 않았습니다.");
+      console.error(":경광등: API Base URL이 설정되지 않았습니다.");
       return;
     }
-
-    fetch(`${apiBaseUrl}/honki/chat/${tableNo}`)
+    fetch(`http://localhost:8080/honki/chat/${tableNo}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("📩 기존 메시지 불러오기 성공:", data);
+        console.log(":화살표가_있는_봉투: 기존 메시지 불러오기 성공:", data);
         dispatch(setMessages({ tableNo, messages: data }));
       })
-      .catch((err) => console.error("🚨 기존 메시지 불러오기 실패:", err));
+      .catch((err) => console.error(":경광등: 기존 메시지 불러오기 실패:", err));
   }, [tableNo, dispatch, apiBaseUrl]);
-
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
-
     console.log("[사장님] 메시지 전송:", inputText.trim());
-
     const newMessage = {
       tableNo,
       sender: "owner",
       content: inputText.trim(),
       timestamp: Date.now(),
     };
-
     // Redux에 메시지 추가
     dispatch(addMessage(newMessage));
     // Hall에서 관리하는 WebSocket 연결을 통해 메시지 전송
     onSendMessage(tableNo, inputText.trim());
     setInputText("");
-
     // 메시지 전송 후 스크롤 조정
     setTimeout(() => {
       if (chatWindowRef.current) {
@@ -60,7 +50,6 @@ const ChatModal: React.FC<ChatModalProps> = ({ tableNo, onSendMessage, onClose }
       }
     }, 100);
   };
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
@@ -95,5 +84,4 @@ const ChatModal: React.FC<ChatModalProps> = ({ tableNo, onSendMessage, onClose }
     </div>
   );
 };
-
 export default ChatModal;
