@@ -55,12 +55,8 @@ public class EmployeeDao {
         }
     }
 
-
-    
-   
-
-
-    public void deleteEmployee(int employeeNo) {
-        sqlSession.delete("EmployeeMapper.deleteEmployee", employeeNo);
+    public void softDeleteEmployee(int employeeNo) {
+        sqlSession.update("EmployeeMapper.softDeleteEmployee", employeeNo);
     }
+
 }

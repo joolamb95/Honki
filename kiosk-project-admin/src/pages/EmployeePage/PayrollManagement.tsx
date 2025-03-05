@@ -40,16 +40,18 @@ const PayrollManagement: React.FC = () => {
 
   // ✅ 검색 및 필터링
   const filteredEmployees = employees.filter((employee) => {
+    // 소프트 삭제된 직원(퇴사한 직원)은 목록에 표시하지 않음
+    if (!employee.employeeStatus) return false;
+  
     const matchesSearch =
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (employee.salary?.jobTitle && employee.salary?.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()));
-
     const matchesFilter = filter ? employee.salary?.jobTitle === filter : true;
     const salaryData = getSalaryData(employee);
     const matchesSalary =
       (minSalary === '' || salaryData.baseSalary >= minSalary) &&
       (maxSalary === '' || salaryData.baseSalary <= maxSalary);
-
+  
     return matchesSearch && matchesFilter && matchesSalary;
   });
 
