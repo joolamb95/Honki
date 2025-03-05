@@ -14,21 +14,98 @@
         SELECT ORDER_SEQ.CURRVAL FROM DUAL
     </select>
 
-    <!-- 특정 테이블의 주문 조회 -->
-    <select id="getOrdersByTable" parameterType="int" resultType="order">
-        SELECT * FROM ORDERS WHERE TABLE_NO = #{tableNo}
-    </select>
-
-    <!-- 전체 주문 조회 -->
-    <select id="getAllOrders" resultType="order">
-        SELECT * FROM ORDERS ORDER BY ORDER_DATE DESC
-    </select>
 
     <!-- 주문 업데이트 -->
-    <update id="updateOrder" parameterType="order">
+    <update id="updateOrders" parameterType="order">
         UPDATE ORDERS
         SET PAYMENT_ID = #{paymentId}, TOTAL_PRICE = #{totalPrice}
         WHERE ORDER_NO = #{orderNo}
     </update>
+    
+	<!-- 전체 테이블의 주문 내역 조회 (resultMap 적용) -->
+	<select id="getAllOrders" resultType="OrderDetailDTO">
+	    SELECT 
+	        o.TABLE_NO AS tableNo, 
+	        o.ORDER_NO AS orderNo, 
+	        od.MENU_NO AS menuNo, 
+	        m.MENU_NAME AS menuName,
+	        MAX(od.AMOUNT) AS totalAmount,  
+	        MAX(od.PRICE) AS totalPrice,  
+	        LISTAGG(od.OPTION_NO, ', ') WITHIN GROUP (ORDER BY od.OPTION_NO) AS optionList  
+	    FROM ORDERS o
+	    LEFT JOIN ORDERS_DETAIL od ON o.ORDER_NO = od.ORDER_NO
+	    LEFT JOIN MENU m ON od.MENU_NO = m.MENU_NO
+	    WHERE od.STATUS = 'Y'
+	    GROUP BY o.TABLE_NO, o.ORDER_NO, od.MENU_NO, m.MENU_NAME
+	    ORDER BY o.ORDER_NO DESC
+	</select>
 
+ 	<!-- ✅ 특정 테이블의 주문 내역 조회 쿼리 추가 -->
+	<select id="getOrdersByTable" resultMap="OrderDetailMap">
+		SELECT
+		    o.ORDER_NO,
+		    o.TABLE_NO,
+		    o.ORDER_DATE,
+		    o.TOTAL_PRICE, -- 🔥 최종 가격이므로 별도 집계 필요 없음
+		    od.DETAIL_ID,
+		    od.MENU_NO,
+		    od.AMOUNT,
+		    od.OPTION_NO,
+		    m.MENU_NAME
+		FROM (
+		    SELECT ORDER_NO, TABLE_NO, ORDER_DATE, TOTAL_PRICE
+		    FROM ORDERS
+		    WHERE TABLE_NO = #{tableNo}
+		) o
+		JOIN ORDERS_DETAIL od ON o.ORDER_NO = od.ORDER_NO
+		LEFT JOIN MENU m ON od.MENU_NO = m.MENU_NO
+		LEFT JOIN MENU_OPTION mo ON od.OPTION_NO = mo.OPTION_NO
+		WHERE od.STATUS = 'Y'
+		ORDER BY o.ORDER_NO DESC
+	</select>
+	
+	<!-- list 를 사용하기 위한 resultMap -->
+	<resultMap id="OrderDetailMap" type="order">
+	    <id property="orderNo" column="ORDER_NO"/>
+	    <result property="tableNo" column="TABLE_NO"/>
+	    <result property="orderDate" column="ORDER_DATE"/>
+	    <result property="totalPrice" column="TOTAL_PRICE"/>
+	    
+    
+	    <!-- 🔥 주문 상세 정보 리스트 매핑 -->
+	    <collection property="orderItems" ofType="ordersDetail">
+	        <id property="detailId" column="DETAIL_ID"/>
+	        <result property="menuNo" column="MENU_NO"/>
+	        <result property="menuName" column="MENU_NAME"/>
+	        <result property="amount" column="AMOUNT"/>
+	        <result property="price" column="TOTAL_PRICE"/>
+	        <result property="optionNo" column="OPTION_NO"/>
+	    </collection>
+	</resultMap>
+	
+		<!-- 삭제할 테이블 번호에 해당하는 주문번호를 모두 조회 -->
+		<select id="getOrderNosByTableNo" resultType="int">
+		    SELECT ORDER_NO 
+		    FROM ORDERS 
+		    WHERE TABLE_NO = #{tableNo}
+		</select>
+		
+		<!-- 해당 테이블번호에 속한 주문내역 소프트삭제 -->
+		<update id="clearOrdersByTable">
+		    UPDATE ORDERS_DETAIL
+		    SET STATUS = 'N'
+		    
+		    <where>
+		    	STATUS = 'Y' AND ORDER_NO IN
+		    <foreach collection="list" open="(" close=")" item="orderNo" separator=",">
+			     #{orderNo}
+		    </foreach>
+		    </where>
+		</update>
+ 
+ 	<!-- 사장님 총 주문량 조회 -->
+ 	<select id="getTotalOrders" resultType="Integer">
+    	SELECT COUNT(ORDER_NO) FROM ORDERS
+	</select>
+	
 </mapper>

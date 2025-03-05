@@ -87,6 +87,22 @@
 		GROUP BY C.CATEGORY_NAME, M.MENU_NO, M.MENU_NAME
 		ORDER BY category, orders DESC
 	</select>
+	
+	<!-- 대시보드 총 지출금액 가져오기 -->
+	<select id="getTotalExpends" resultType="expend">
+	SELECT COALESCE(SUM(AMOUNT),0) FROM EXPENDS
+	</select>
+	
+	<!-- 대시보드 최근 6개월 지출내역 가져오기 -->
+	<select id="getMonthlyExpenses" resultType="map">
+	SELECT 
+		TO_CHAR(EXPEND_DATE, 'YYYY-MM') AS MONTH, 
+		COALESCE(SUM(AMOUNT), 0) AS TOTAL_EXPEND 
+	FROM EXPENDS WHERE EXPEND_DATE >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5) 
+	GROUP BY TO_CHAR(EXPEND_DATE, 'YYYY-MM') 
+	ORDER BY MONTH
+	</select>
+	
 </mapper>
 
 

@@ -150,7 +150,6 @@ const ExpendManagement: React.FC = () => {
                 ))}
               </Pie>
               <Tooltip formatter={(value, name, props) => [`${value}%`, `${props.payload.name}`]} />
-              <Legend align="right" verticalAlign="bottom" layout="vertical" />
             </PieChart>
           </ResponsiveContainer>
         </div>

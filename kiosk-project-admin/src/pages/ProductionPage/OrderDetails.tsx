@@ -70,18 +70,6 @@ const OrderDetails: React.FC = () => {
         return () => clearInterval(intervalId);
     }, [appliedDateRange, appliedSearchTerm]);
 
-    const handleSearch = () => {
-        setAppliedSearchTerm(searchTerm);
-        setAppliedDateRange({ start: startDate, end: endDate });
-    };
-
-    // Enter 키 입력 시 검색 실행
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
-    };
-
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
             const orderDate = new Date(order.orderDate);

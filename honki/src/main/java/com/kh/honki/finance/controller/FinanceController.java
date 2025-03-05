@@ -1,9 +1,11 @@
 package com.kh.honki.finance.controller;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -119,5 +121,24 @@ public class FinanceController {
         log.info("📌 인기 메뉴 요청");
         return service.getTopMenus();
     }
+    
+    
+    @GetMapping("/totalExpends")
+    public ResponseEntity<Integer> getTotalExpends() {
+        int totalExpends = service.getTotalExpends();
+        return ResponseEntity.ok(totalExpends);
+    }
+    
+    @GetMapping("/monthly-expenses")
+    public ResponseEntity<List<Map<String, Object>>> getMonthlyExpenses() {
+        try {
+            List<Map<String, Object>> expenses = service.getMonthlyExpenses();
+            return ResponseEntity.ok(expenses);
+        } catch (Exception e) {
+            log.error("❌ 월별 지출 데이터 조회 실패: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+    
     
 }

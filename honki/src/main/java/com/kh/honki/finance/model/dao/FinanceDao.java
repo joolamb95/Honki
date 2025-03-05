@@ -47,6 +47,14 @@ public class FinanceDao {
 	public List<Map<String, Object>> getTopMenus() {
 		return session.selectList("finance.getTopMenus");
 	}
-	
-	
+
+	public int getTotalExpends() {
+		Integer result = session.selectOne("finance.getTotalExpends");
+		return (result != null) ? result : 0;
+	}
+
+	public List<Map<String, Object>> getMonthlyExpenses() {
+		return session.selectList("finance.getMonthlyExpenses");
+	}
+
 }
