@@ -80,7 +80,7 @@ const SalesAnalysis: React.FC = () => {
 
         {/* 이번 주 매출 */}
         <div className="section">
-          <h2>이번 주 매출</h2>
+          <h2>주간 누적 매출</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={weeklySales}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -88,8 +88,8 @@ const SalesAnalysis: React.FC = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="earlySales" fill="#3498db" name="17:00~20:59" />
-              <Bar dataKey="lateSales" fill="#2ecc71" name="21:00~02:00" />
+              <Bar dataKey="morningSales" fill="#3498db" name="오전 매출 (00~11시)" />
+              <Bar dataKey="afternoonSales" fill="#2ecc71" name="오후 매출 (12~23시)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

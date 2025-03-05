@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @Slf4j  // ✅ 로그 추가
-@CrossOrigin(origins = {"http://192.168.30.177:8080","http://192.168.30.177:5173"}) // React에서 API 접근 허용
+@CrossOrigin(origins = {"http://192.168.30.192:8080","http://192.168.30.192:5173"}) // React에서 API 접근 허용
 public class ChatController {
 	private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;

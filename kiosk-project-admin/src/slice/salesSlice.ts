@@ -17,7 +17,7 @@ export interface TopMenuCategory {
 // Redux 상태 정의
 interface SalesState {
   monthlySales: { date: string; SALES: number }[];
-  weeklySales: { day: string; earlySales: number; lateSales: number }[];
+  weeklySales: { day: string; morningSales: number; afternoonSales: number }[];
   topMenus: TopMenuCategory[];
   loading: boolean;
 }
@@ -46,28 +46,51 @@ export const fetchMonthlySales = createAsyncThunk(
 );
 
 // ✅ 이번 주 매출 가져오기
-export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async () => {
+export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async (_, { rejectWithValue }) => {
+  
   const response = await axios.get("http://localhost:8080/honki/finance/sales/weekly");
 
+  console.log("✅ 원본 API 응답:", response.data); // 📌 응답 데이터 확인
+
+  if (!response.data || response.data.length === 0) {
+    console.warn("⚠️ API에서 반환된 데이터가 없습니다.");
+    return rejectWithValue("주간 매출 데이터가 없습니다.");
+  }
+
+    // ✅ 요일 배열 선언 (고정값)
+    const daysOfWeek = ["월", "화", "수", "목", "금", "토", "일"];
+
   // ✅ 데이터를 요일 기준으로 그룹화하여 변환
-  const groupedSales: Record<string, { day: string; earlySales: number; lateSales: number }> = {};
+  const groupedSales: Record<string, { day: string; morningSales: number; afternoonSales: number }> = {};
 
   response.data.forEach((item: any) => {
     const day = item.DAY;
 
     if (!groupedSales[day]) {
-      groupedSales[day] = { day, earlySales: 0, lateSales: 0 };
+      groupedSales[day] = { day, morningSales: 0, afternoonSales: 0 };
     }
 
-    if (item.TIME_PERIOD === "earlySales") {
-      groupedSales[day].earlySales += item.SALES;
-    } else if (item.TIME_PERIOD === "lateSales") {
-      groupedSales[day].lateSales += item.SALES;
+    if (item.TIME_PERIOD === "morningSales") {
+      groupedSales[day].morningSales += item.SALES;
+    } else if (item.TIME_PERIOD === "afternoonSales") {
+      groupedSales[day].afternoonSales += item.SALES;
     }
   });
 
-  return Object.values(groupedSales);
+  console.log("✅ groupedSales 변환 후:", groupedSales);
+
+ // ✅ 모든 요일을 포함하도록 데이터 보완
+ const completedSales = daysOfWeek.map((day) => groupedSales[day] || { day, morningSales: 0, afternoonSales: 0 });
+
+ console.log("✅ 최종 weeklySales 데이터:", completedSales);
+
+
+ return completedSales;
 });
+
+
+
+
 
 // ✅ 인기 메뉴 가져오기
 export const fetchTopMenus = createAsyncThunk(

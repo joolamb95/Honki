@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/menus")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://192.168.30.192:5173")
 public class MenuController {
 	private final MenuService service;
 
@@ -35,7 +35,7 @@ public class MenuController {
 		if (list.isEmpty()) {
 			return ResponseEntity.noContent().build();
 		}
-		response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:5173");
+		response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://192.168.30.192:5173");
 		return ResponseEntity.ok(list);
 
 	}
@@ -49,7 +49,7 @@ public class MenuController {
 		if (list.isEmpty()) {
 			return ResponseEntity.noContent().build();
 		}
-		response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:5173");
+		response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://192.168.30.192:5173");
 		return ResponseEntity.ok(list);
 	}
 	@GetMapping("/{menuNo}")

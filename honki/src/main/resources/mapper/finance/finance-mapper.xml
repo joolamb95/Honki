@@ -51,24 +51,25 @@
 		ORDER BY TO_CHAR(P.CREATE_DATE, 'YYYY-MM-DD') ASC
     </select>
     
-    <!-- 주별 매출 데이터 조회 -->
-    <select id="getWeeklySales" resultType="map">
-        SELECT
-            TO_CHAR(O.ORDER_DATE, 'DY') AS day,
-            CASE 
-                WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 17 AND 20 THEN 'earlySales'
-                WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 21 AND 2 THEN 'lateSales'
-            END AS time_period,
-            SUM(O.TOTAL_PRICE) AS sales
-        FROM ORDERS O
-        WHERE ORDER_DATE >= TRUNC(SYSDATE, 'D') - 7  -- 최근 7일
-        GROUP BY TO_CHAR(O.ORDER_DATE, 'DY'), 
-                 CASE 
-                    WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 17 AND 20 THEN 'earlySales'
-                    WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 21 AND 2 THEN 'lateSales'
-                 END
-        ORDER BY day ASC
-    </select>
+	<!-- 주별 매출 데이터 조회 -->
+	<select id="getWeeklySales" resultType="map">
+		SELECT 
+		    TO_CHAR(O.ORDER_DATE, 'DY') AS day,
+		    CASE 
+		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 0 AND 11 THEN 'morningSales'
+		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 12 AND 23 THEN 'afternoonSales'
+		    END AS time_period,
+		    SUM(O.TOTAL_PRICE) AS sales -- ✅ 매출 합계 추가
+		FROM ORDERS O
+		WHERE ORDER_DATE >= TRUNC(SYSDATE) - 6  -- 최근 7일 기준
+		GROUP BY 
+		    TO_CHAR(O.ORDER_DATE, 'DY'), 
+		    CASE 
+		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 0 AND 11 THEN 'morningSales'
+		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 12 AND 23 THEN 'afternoonSales'
+		    END
+		ORDER BY day ASC
+	</select>
 
     <!-- 인기 메뉴 Top 3 조회 -->
 	<select id="getTopMenus" resultType="map">

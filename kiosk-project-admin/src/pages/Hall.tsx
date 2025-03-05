@@ -55,20 +55,23 @@ const Table: React.FC<TableProps> = ({
           </div>
         ))}
       </div>
-
-      {/* ✅ 이모티콘 버튼에 뱃지 추가 */}
-      <button 
-        className="chat-icon" 
-        onClick={(e) => {
-          e.stopPropagation();
-          onChatClick(tableNo);
-        }}
-      >
-        💬
-        {unreadCount > 0 && (
-          <span className="unread-badge">{unreadCount}</span>
-        )}
-      </button>
+        <div style={{display:'flex',justifyContent:'space-between', alignItems:'center', width:'100%'}}>
+          {totalAmount ? <div className="table-total">{totalAmount}</div> : <div className="table-total">0원</div>}
+        
+              {/* ✅ 이모티콘 버튼에 뱃지 추가 */}
+              <button 
+                        className="chat-icon" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onChatClick(tableNo);
+                        }}
+                      >
+                        💬
+                        {unreadCount > 0 && (
+                          <span className="unread-badge">{unreadCount}</span>
+                        )}
+                </button>
+          </div>
     </div>
   );
 };
@@ -118,7 +121,7 @@ const Hall: React.FC = () => {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; tableNo: number } | null>(null);
 
   const [chatRefreshKey, setChatRefreshKey] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState<{ [key: number]: number }>({});
+
 
   // =============================
   // 전체 메뉴 불러오기
@@ -313,19 +316,18 @@ const Hall: React.FC = () => {
   
           // ✅ 같은 메뉴명을 그룹화하면서 옵션 처리
           const groupedMap = allItems.reduce((acc: { [key: string]: OrderDetail }, item) => {
-              const key = item.menuName;
+            
+          // ✅ 옵션 포함하여 키 생성
+          const optionKey = item.optionList && Array.isArray(item.optionList) ? JSON.stringify(item.optionList.sort()) : "no-option";
+          const key = `${item.menuName}-${optionKey}`;
               if (!acc[key]) {
                   acc[key] = {
                       ...item,
-                      amount: 1,
+                      amount: item.amount,
                       price: item.price || 0,  // ✅ 가격 0 방지
                   };
               } else {
-                const optionValue = typeof item.optionNo === "string" ? parseInt(item.optionNo, 10) : item.optionNo;
-                  if ( typeof optionValue === "number" && optionValue === 0) {
-                      acc[key].amount += item.amount;
-                      acc[key].price += (item.price || 0) * item.amount; // ✅ undefined 방지
-                  }
+                acc[key].amount = item.amount || 1;
               }
               return acc;
           }, {});

@@ -22,4 +22,5 @@ public class Attendance {
 	    private String clockOut;
 	    private double workHours;
 	    private String absenceStatus;
+	    private String employeeStatus;
 	}
