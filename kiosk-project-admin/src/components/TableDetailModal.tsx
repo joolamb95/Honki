@@ -53,12 +53,15 @@ return acc + itemTotal + subItemTotal;
         method: "PUT",
       });
 
-      if (response.ok) {
-        alert("결제가 취소되었습니다.");
-        onClose(); // 모달 닫기
-      } else {
-        alert("결제 취소 실패");
+      if (!response.ok) {
+        throw new Error("결제 취소 실패");
       }
+  
+      alert("결제가 취소되었습니다.");
+  
+      // ✅ 모달 닫기
+      onClose();
+
     } catch (error) {
       console.error("결제 취소 오류:", error);
       alert("결제 취소 중 오류 발생");

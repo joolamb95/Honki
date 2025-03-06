@@ -56,4 +56,5 @@ public class OrderDao {
 	public  int getTotalOrders() {
 		return sqlSession.selectOne("order.getTotalOrders");
 	}
+
 }

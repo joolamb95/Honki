@@ -37,5 +37,9 @@ public class PaymentDao {
 	public List<Map<String, Object>> getRecentPayments() {
 		return session.selectList("payment.getRecentPayments");
 	}
+
+	public int cancelPayment(int tableNo) {
+		return session.update("payment.cancelPayment",tableNo);
+	}
 	
 }
