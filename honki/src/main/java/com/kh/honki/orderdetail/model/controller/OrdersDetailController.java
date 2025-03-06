@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,7 +63,7 @@ public class OrdersDetailController {
 
         // 데이터 저장
         try {
-            int result = detailService.insertOrderDetail(orderDetails);
+            int result = detailservice.insertOrderDetail(orderDetails);
             if (result > 0) {
                 return ResponseEntity.ok(Map.of("message", "✅ 주문 상세 정보 저장 성공"));
             } else {
