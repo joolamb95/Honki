@@ -39,5 +39,22 @@
 	ORDER BY 1 DESC
 	FETCH FIRST 8 ROWS ONLY
 	</select>
-
+	
+	<!-- 결제 취소 -->
+	<update id="cancelPayment">
+	    UPDATE PAYMENT
+	    SET STATUS = 'N'
+	    WHERE PAYMENT_ID IN (
+	        SELECT DISTINCT PAYMENT_ID
+	        FROM ORDERS
+	        WHERE ORDER_NO IN (
+	            SELECT DISTINCT O.ORDER_NO
+	            FROM ORDERS O
+	            JOIN ORDERS_DETAIL OD ON O.ORDER_NO = OD.ORDER_NO
+	            WHERE O.TABLE_NO = #{tableNo}
+	            AND OD.STATUS = 'Y'
+	            AND PAYMENT_ID IS NOT NULL
+	        )
+	    )
+	</update>
 </mapper>

@@ -135,6 +135,16 @@ public class OrderService {
 	    }).collect(Collectors.toList());
 	}
 
+	public boolean cancelPayment(int tableNo) {
+        
+		int updatedRows = paymentDao.cancelPayment(tableNo);
+        if (updatedRows == 0) {
+            return false; // 결제 취소 실패
+        }
+		
+        return updatedRows > 0;  // 업데이트된 행이 있으면 true 반환
+	}
+
 
 
 }

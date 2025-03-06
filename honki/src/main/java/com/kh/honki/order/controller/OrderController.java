@@ -110,6 +110,17 @@ public class OrderController {
         }
     }
     
+    // 주문 취소
+    @PutMapping("/cancel-payment/{tableNo}")
+    public ResponseEntity<String> cancelPayment(@PathVariable int tableNo) {
+        boolean success = service.cancelPayment(tableNo);
+        if (success) {
+            return ResponseEntity.ok("결제가 취소되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("결제 취소 실패");
+        }
+    }
+    
     // 사장님 대시보드 총 주문량
     @GetMapping("/totalOrders")
     public ResponseEntity<Integer> getTotalOrders() {
