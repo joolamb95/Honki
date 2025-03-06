@@ -68,23 +68,33 @@ Provide only a comma-separated list of dish names (no extra text)."""
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-try:
-    with open("quizzes.json", "r", encoding="utf-8") as f:
-        quiz_data = json.load(f)["quiz"]
-except FileNotFoundError:
-    quiz_data = []
+def load_quiz_data():
+    try:
+        with open("quizzes.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("quiz",[])
+    except FileNotFoundError:
+        return []
+quiz_data = load_quiz_data()
 
 @app.get("/get-quiz")
 async def get_quiz():
+    global quiz_data
     try:
         if not quiz_data:
-            raise HTTPException(status_code=404, detail="퀴즈 데이터가 없습니다.")
+            quiz_data = load_quiz_data()
+            if not quiz_data:
+                raise HTTPException(status_code=404, detail="퀴즈 데이터가 없습니다.")
+            
         selected_quiz = random.choice(quiz_data)
-        return {"question": selected_quiz["question"], "answer": selected_quiz["answer"]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        quiz_data.remove(selected_quiz)
 
+        return{
+            "question" : selected_quiz["question"],
+            "answer" : selected_quiz["answer"]
+        } 
+    except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 class QuizRequest(BaseModel):
     correctAnswer: str
