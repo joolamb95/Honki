@@ -105,7 +105,7 @@
  
  	<!-- 사장님 총 주문량 조회 -->
  	<select id="getTotalOrders" resultType="Integer">
-    	SELECT COUNT(ORDER_NO) FROM ORDERS
+    	SELECT COUNT(ORDER_NO) FROM ORDERS WHERE ORDER_DATE = SYSDATE
 	</select>
 	
 </mapper>

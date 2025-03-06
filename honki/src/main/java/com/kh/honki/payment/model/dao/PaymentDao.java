@@ -26,7 +26,8 @@ public class PaymentDao {
 	}
 
 	public int getTotalRevenue() {
-		return session.selectOne("payment.getTotalRevenue");
+		Integer totalRevenue = session.selectOne("payment.getTotalRevenue");
+		return (totalRevenue != null) ? totalRevenue : 0; // null이면 0 반환
 	}
 
 	public List<Map<String, Object>> getMonthlyRevenues() {

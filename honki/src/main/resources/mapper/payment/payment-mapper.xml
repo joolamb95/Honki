@@ -17,7 +17,7 @@
 
 	<!-- 사장님 매출액 조회 -->
 	<select id="getTotalRevenue" resultType="int">
-	    SELECT SUM(AMOUNT) FROM PAYMENT WHERE STATUS = 'Y'
+	    SELECT SUM(AMOUNT) FROM PAYMENT WHERE STATUS = 'Y'AND CREATE_DATE = SYSDATE
 	</select>
 	
 		<!-- 사장님 최근 6개월 수입 조회 -->

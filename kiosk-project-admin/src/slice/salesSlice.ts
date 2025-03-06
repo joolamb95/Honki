@@ -46,26 +46,30 @@ export const fetchMonthlySales = createAsyncThunk(
 );
 
 // ✅ 이번 주 매출 가져오기
-export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async (_, { rejectWithValue }) => {
-  
+export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async () => {
   const response = await axios.get("http://localhost:8080/honki/finance/sales/weekly");
 
-  console.log("✅ 원본 API 응답:", response.data); // 📌 응답 데이터 확인
+  console.log("✅ 원본 API 응답:", response.data);
 
   if (!response.data || response.data.length === 0) {
     console.warn("⚠️ API에서 반환된 데이터가 없습니다.");
-    return rejectWithValue("주간 매출 데이터가 없습니다.");
+    return [];
   }
 
-    // ✅ 요일 배열 선언 (고정값)
-    const daysOfWeek = ["월", "화", "수", "목", "금", "토", "일"];
+  // ✅ 이번 주 월요일을 기준으로 7일간 필터링
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - today.getDay() + 1); // 이번 주 월요일
 
-  // ✅ 데이터를 요일 기준으로 그룹화하여 변환
+  // ✅ 데이터를 요일 기준으로 그룹화
   const groupedSales: Record<string, { day: string; morningSales: number; afternoonSales: number }> = {};
 
   response.data.forEach((item: any) => {
-    const day = item.DAY;
+    const date = new Date(item.ORDER_DATE);  // 날짜 변환
+    if (date < monday) return;  // **이번 주 데이터만 사용**
 
+    const day = item.DAY_LABEL; // 요일 (한글)
+    
     if (!groupedSales[day]) {
       groupedSales[day] = { day, morningSales: 0, afternoonSales: 0 };
     }
@@ -79,14 +83,9 @@ export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async
 
   console.log("✅ groupedSales 변환 후:", groupedSales);
 
- // ✅ 모든 요일을 포함하도록 데이터 보완
- const completedSales = daysOfWeek.map((day) => groupedSales[day] || { day, morningSales: 0, afternoonSales: 0 });
-
- console.log("✅ 최종 weeklySales 데이터:", completedSales);
-
-
- return completedSales;
+  return Object.values(groupedSales);
 });
+
 
 
 
