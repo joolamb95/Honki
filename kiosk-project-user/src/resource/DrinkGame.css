@@ -1,0 +1,173 @@
+/* ✅ 모달 배경 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ✅ 모달 컨테이너 */
+.game-modal {
+  width: 420px;
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* ✅ 버튼이 왼쪽 아래로 밀리지 않도록 중앙 정렬 */
+}
+
+/* ✅ 제목 스타일 */
+.game-modal h2 {
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* ✅ 드롭다운 스타일 */
+.dropdown-label {
+  font-size: 16px;
+  margin: 15px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.player-select {
+  margin-top: 5px;
+  padding: 10px;
+  font-size: 16px;
+  width: 100px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+/* ✅ 버튼 그룹 (정렬 개선) */
+.button-group10 {
+  display: flex;
+  justify-content: center; /* ✅ 중앙 정렬 */
+  gap: 12px;
+  margin-top: 15px;
+  width: 100%;
+}
+
+/* ✅ 버튼 공통 스타일 */
+.start-button1, .close-button2 {
+  flex: 1;
+  max-width: 140px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 12px 0;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* ✅ 게임 시작 버튼 (초록색) */
+.start-button1 {
+  background: #28a745;
+  color: white;
+}
+
+.start-button1:hover {
+  background: #218838;
+}
+
+/* ✅ 닫기 버튼 (빨간색) */
+.close-button2 {
+  background: #dc3545;
+  color: white;
+}
+
+.close-button2:hover {
+  background: #c82333;
+}
+
+/* ✅ "다시 하기" 버튼 그룹 */
+.button-group3 {
+  display: flex;
+  justify-content: center;  /* ✅ 버튼 간격 중앙 정렬 */
+  width: 100%;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* 🔄 다시 하기 버튼 */
+.retry-button3 {
+  flex: 1;
+  max-width: 150px;
+  text-align: center;
+  background: linear-gradient(45deg, #28a745, #34d058);
+  color: white;
+  border: none;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0px 4px 10px rgba(40, 167, 69, 0.4);
+}
+
+.retry-button3:hover {
+  background: linear-gradient(45deg, #218838, #2cbd4b);
+  transform: scale(1.05);
+}
+
+/* ❌ 닫기 버튼 */
+.close-button3 {
+  flex: 1;
+  max-width: 150px;
+  text-align: center;
+  background: linear-gradient(45deg, #dc3545, #ff4757);
+  color: white;
+  border: none;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0px 4px 10px rgba(220, 53, 69, 0.4);
+}
+
+.close-button3:hover {
+  background: linear-gradient(45deg, #c82333, #ff2e44);
+  transform: scale(1.05);
+}
+
+/* ✅ "벌칙 섞는 중..." 로딩 애니메이션 */
+@keyframes blink {
+  from { opacity: 1; }
+  to { opacity: 0.5; }
+}
+
+.start-button1[disabled] {
+  background: #aaa;
+  cursor: not-allowed;
+  animation: blink 1s infinite alternate;
+}
+
+/* ✅ 벌칙 섞는 중 화면 */
+.loading-screen {
+  font-size: 20px;
+  font-weight: bold;
+  color: #555;
+  text-align: center;
+  padding: 50px;
+  animation: blink 1.2s infinite alternate;
+}

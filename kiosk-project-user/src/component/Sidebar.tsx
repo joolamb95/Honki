@@ -33,7 +33,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
   // 카테고리 목록 불러오기
   useEffect(() => {
-    fetch(`${apiBaseUrl}/honki/api/categories`)
+    fetch("http://localhost:8080/honki/api/categories")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`서버 오류: ${response.status}`);

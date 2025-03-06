@@ -60,7 +60,7 @@
 .menu-img {
  width: 100%;
 height: 70%;
-z-index: 10;
+
 
 }
 
@@ -187,4 +187,43 @@ z-index: 10;
 .cate-button2:hover {
   background-color: #ff4500;
 }
+}
+/* 오버레이 배경(반투명 검은색) */
+.sold-out-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 배경색(투명도 50%) */
+  display: flex;
+  justify-content: center; /* 수평 중앙 정렬 */
+  align-items: center;     /* 수직 중앙 정렬 */
+}
+
+/* 실제 모달 콘텐츠(하얀 박스) */
+.sold-out-modal {
+  position: relative; /* 오버레이 내에서 상대 위치 */
+  background-color: #fff;
+  padding: 20px;
+  width: 400px; /* 모달 너비 조정 */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 모달 내부 내용 스타일 */
+.sold-out-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 닫기 버튼 */
+.sold-out-btn {
+  margin-top: 16px;
+  padding: 8px 12px;
+  background-color: #e79071;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
