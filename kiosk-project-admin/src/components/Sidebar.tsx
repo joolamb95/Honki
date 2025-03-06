@@ -1,19 +1,33 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaShoppingCart } from 'react-icons/fa';  // 홈 현황 아이콘
 import { AiOutlineHome } from 'react-icons/ai';   // 재고 관리 아이콘
 import { BsPerson } from 'react-icons/bs';        // 인사 관리 아이콘
 import { MdBuild } from 'react-icons/md';         // 생산 관리 아이콘
 import { BiDollar } from 'react-icons/bi';        // 재무 관리 아이콘
 import '../style/Sidebar.css';
+import { RootState } from '../store';
+import { clearTotalCount } from '../slice/ChatSlice';
 
 const Sidebar: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const dispatch = useDispatch();
+
     const [isStockOpen, setIsStockOpen] = useState(false);
     const [isProductionOpen, setIsProductionOpen] = useState(false);
     const [isFinanceOpen, setIsFinance] = useState(false);
     const [isEmployeeOpen, setIsEmployeeOpen] = useState(false);
+
+    // Redux store에서 전체 메시지 토탈 카운트 가져오기
+    const totalCount = useSelector((state: RootState) => state.chat.totalCount);
+
+    // "홀 현황" 버튼 클릭 시: 카운트 0으로 만들고, 메인(/)으로 이동
+    const handleHallClick = () => {
+        dispatch(clearTotalCount());  // 전체 카운트 초기화
+        navigate('/');                // '/' 경로로 이동
+    };
 
     const toggleStock = () => {
         setIsStockOpen(!isStockOpen);
@@ -24,32 +38,39 @@ const Sidebar: React.FC = () => {
         setIsProductionOpen(!isProductionOpen);
     };
 
-    const toggleFinance = ()=>{
+    const toggleFinance = () => {
         setIsFinance(!isFinanceOpen);
     };
 
-    const toggleEmployee =() => {
+    const toggleEmployee = () => {
         setIsEmployeeOpen(!isEmployeeOpen);
         navigate('/employee');
-    }
+    };
 
-    
-// 현재 경로가 어떤 메인 메뉴에 속하는지 확인하는 함수
-const isStockActive = location.pathname.includes('/stock') && !location.pathname.includes('/stock/addMenu') && !location.pathname.includes('/stock/orderDetails');
-const isEmployeeActive = location.pathname.includes('/employee');
-const isProductionActive = location.pathname.includes('/stock/addMenu') || location.pathname.includes('/stock/orderDetails');
-const isFinanceActive = location.pathname.includes('/finance');
+    // 현재 경로가 어떤 메인 메뉴에 속하는지 확인하는 함수
+    const isStockActive = location.pathname.includes('/stock') &&
+                          !location.pathname.includes('/stock/addMenu') &&
+                          !location.pathname.includes('/stock/orderDetails');
+    const isEmployeeActive = location.pathname.includes('/employee');
+    const isProductionActive = location.pathname.includes('/stock/addMenu') ||
+                               location.pathname.includes('/stock/orderDetails');
+    const isFinanceActive = location.pathname.includes('/finance');
 
     return (
         <div className="sidebar">
+            {/* 홀 현황 버튼 */}
             <button 
-                className={location.pathname === '/' ? 'active' : ''} 
-                onClick={() => navigate('/')}
+            className={location.pathname === '/' ? 'active' : ''} 
+            onClick={handleHallClick}
             >
-                <FaShoppingCart className="icon" />
-                <span>홀 현황</span>
+            <FaShoppingCart className="icon" />
+            <span>홀 현황</span>
+            {location.pathname !== '/' && totalCount > 0 && (
+                <span className="unread-badge">{totalCount}</span>
+            )}
             </button>
             
+            {/* 재고관리 */}
             <div className="stock-menu">
                 <button 
                     className={`stock-main ${isStockActive ? 'active' : ''}`}
@@ -76,14 +97,14 @@ const isFinanceActive = location.pathname.includes('/finance');
                 )}
             </div>
 
-            {/* 인사 관리 버튼 */}
+            {/* 인사 관리 */}
             <div className="stock-menu">
                 <button
                     className={`stock-main ${location.pathname === '/employee/management' ? 'active' : ''}`}
                     onClick={() => {
                         navigate('/employee/management'); // 인사 관리 메인 페이지로 이동
                         setIsEmployeeOpen(!isEmployeeOpen); // 하위 메뉴 토글
-                      }}
+                    }}
                 >
                     <BsPerson className="icon" />
                     <span>인사 관리</span>
@@ -107,6 +128,7 @@ const isFinanceActive = location.pathname.includes('/finance');
                 )}
             </div>
 
+            {/* 생산관리 */}
             <div className="stock-menu">
                 <button 
                     className={`stock-main ${isProductionActive ? 'active' : ''}`}
@@ -139,6 +161,7 @@ const isFinanceActive = location.pathname.includes('/finance');
                 )}
             </div>
 
+            {/* 재무관리 */}
             <div className="stock-menu">
                 <button 
                     className={`stock-main ${isFinanceActive ? 'active' : ''}`}
