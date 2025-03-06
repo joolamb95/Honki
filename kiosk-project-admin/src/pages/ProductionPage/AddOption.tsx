@@ -2,6 +2,7 @@ import React, {useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../../style/AddOption.css';
 import axios from 'axios';
+import Pagination from '../../components/Pagination';
 
 interface Option {
     optionNo: number;          // MENU_NO
@@ -17,6 +18,8 @@ const AddOption: React.FC = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [optionToDelete, setOptionToDelete] = useState<string | null>(null);
     const [optionList, setOptionList] = useState<Option[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     
     // 카테고리 목록
     const categories = ['선택하세요', '사시미', '구이', '꼬치', '찜', '탕', '식사', '라멘', '튀김', '사이드', '음료/주류'];
@@ -136,6 +139,23 @@ const AddOption: React.FC = () => {
         fetchOptionList();
     }, []);
 
+    const getPaginatedData = (data: any[]) => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return data.slice(startIndex, endIndex);
+    };
+
+    const getTotalPages = (totalItems: number) => {
+        return Math.ceil(totalItems / itemsPerPage);
+    };
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const currentItems = getPaginatedData(optionList);
+    const totalPages = getTotalPages(optionList.length);
+
     return (
         <div className="stock-management">
             <div className="stock-nav">
@@ -178,7 +198,7 @@ const AddOption: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {optionList.map((option, index) => (
+                    {currentItems.map((option, index) => (
                         <tr key={index}>
                             <td>{option.optionNo}</td>
                             <td>{categories[option.categoryNo]}</td>
@@ -204,6 +224,12 @@ const AddOption: React.FC = () => {
                     ))}
                 </tbody>
             </table>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
 
             {showModal && (
                 <div className="modal-view">

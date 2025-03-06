@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import '../../style/StockDetails.css';
 import axios from 'axios';
 import StockOrder from './StockOrder';
+import Pagination from '../../components/Pagination';
 
 
 interface StockOrder {
@@ -23,6 +24,8 @@ const StockDetails: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'postpone' | 'completed'>('postpone')
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCategory, setSearchCategory] = useState('전체');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const navigate = useNavigate();
 
@@ -127,6 +130,23 @@ const StockDetails: React.FC = () => {
         });
     }, [orders, startDate, endDate, searchTerm, searchCategory]);
 
+    const getPaginatedData = (data: any[]) => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return data.slice(startIndex, endIndex);
+    };
+
+    const getTotalPages = (totalItems: number) => {
+        return Math.ceil(totalItems / itemsPerPage);
+    };
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const currentItems = getPaginatedData(filteredOrders);
+    const totalPages = getTotalPages(filteredOrders.length);
+
     return (
         <div className="stock-management">
             <div className="stock-nav">
@@ -219,7 +239,7 @@ const StockDetails: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredOrders.map(order => (
+                    {currentItems.map(order => (
                         <tr key={order.orderId}>
                             <td>{order.orderId}</td>
                             <td>{order.itemNo}</td>
@@ -245,6 +265,12 @@ const StockDetails: React.FC = () => {
                     ))}
                 </tbody>
             </table>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 };

@@ -147,19 +147,4 @@ public class ProductionController {
 					.body("주문 내역 조회에 실패했습니다. 에러: " + e.getMessage());
 		}
 	}
-	
-	@PostMapping("/order/complete")
-	@CrossOrigin(origins = "http://localhost:5173")
-	public ResponseEntity<String> decreaseStock(@RequestBody Map<String, Object> orderData) {
-		try {
-			int orderNo = (Integer) orderData.get("orderNo");
-			int amount = (Integer) orderData.get("amount");
-			
-			stockService.decreaseStock(orderNo, amount);
-			
-			return ResponseEntity.ok("재고 차감 성공");
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body("재고 차감 실패: " + e.getMessage());
-		}
-	}
 }
