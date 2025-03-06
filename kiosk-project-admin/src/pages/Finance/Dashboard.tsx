@@ -131,9 +131,9 @@ const Dashboard: React.FC = () => {
           <div className="today-sales">
             <h2>오늘의 매출 정보</h2>
             <div className="sales-cards">
-              <SalesCard title="총 매출액" value={`₩${salesData.totalRevenue.toLocaleString()}`} percentage="+8%" bgColor="#FFE2E5" iconColor="#FA5A7D" />
-              <SalesCard title="총 주문량" value={`${salesData.totalOrders}`} percentage="+5%" bgColor="#FFF4DE" iconColor="#FF947A" />
-              <SalesCard title="순 이익" value={`₩${salesData.netProfit.toLocaleString()}`} percentage="+1.2%" bgColor="#DCFCE7" iconColor="#3CD856" />
+              <SalesCard title="총 매출액" value={`₩${salesData.totalRevenue.toLocaleString()}`} percentage="" bgColor="#FFE2E5" iconColor="#FA5A7D" />
+              <SalesCard title="총 주문량" value={`${salesData.totalOrders}`} percentage="" bgColor="#FFF4DE" iconColor="#FF947A" />
+              <SalesCard title="순 이익" value={`₩${salesData.netProfit.toLocaleString()}`} percentage="" bgColor="#DCFCE7" iconColor="#3CD856" />
               {/* <SalesCard title="방문 손님" value="0명" percentage="+0.5%" bgColor="#F3E8FF" iconColor="#BF83FF" /> */}
             </div>
           </div>

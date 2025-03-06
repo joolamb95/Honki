@@ -53,22 +53,27 @@
     
 	<!-- 주별 매출 데이터 조회 -->
 	<select id="getWeeklySales" resultType="map">
-		SELECT 
-		    TO_CHAR(O.ORDER_DATE, 'DY') AS day,
-		    CASE 
-		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 0 AND 11 THEN 'morningSales'
-		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 12 AND 23 THEN 'afternoonSales'
-		    END AS time_period,
-		    SUM(O.TOTAL_PRICE) AS sales -- ✅ 매출 합계 추가
-		FROM ORDERS O
-		WHERE ORDER_DATE >= TRUNC(SYSDATE) - 6  -- 최근 7일 기준
-		GROUP BY 
-		    TO_CHAR(O.ORDER_DATE, 'DY'), 
-		    CASE 
-		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 0 AND 11 THEN 'morningSales'
-		        WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 12 AND 23 THEN 'afternoonSales'
-		    END
-		ORDER BY day ASC
+    SELECT
+        TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS ORDER_DATE,
+        TO_CHAR(O.ORDER_DATE, 'D') AS DAY,
+        TO_CHAR(O.ORDER_DATE, 'DY', 'NLS_DATE_LANGUAGE=KOREAN') AS DAY_LABEL,
+        CASE 
+            WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 0 AND 11 THEN 'morningSales'
+            WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 12 AND 23 THEN 'afternoonSales'
+        END AS TIME_PERIOD,
+        SUM(O.TOTAL_PRICE) AS SALES
+    FROM ORDERS O
+    WHERE O.ORDER_DATE &gt;= TRUNC(SYSDATE, 'D') - (TO_CHAR(SYSDATE, 'D') - 2) -- 이번 주 월요일S
+      AND O.ORDER_DATE &lt; TRUNC(SYSDATE, 'D') - (TO_CHAR(SYSDATE, 'D') - 2) + NUMTODSINTERVAL(7, 'DAY') -- 이번 주 일요일
+    GROUP BY
+        TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD'),
+        TO_CHAR(O.ORDER_DATE, 'D'),
+        TO_CHAR(O.ORDER_DATE, 'DY', 'NLS_DATE_LANGUAGE=KOREAN'),
+        CASE 
+            WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 0 AND 11 THEN 'morningSales'
+            WHEN TO_NUMBER(TO_CHAR(O.ORDER_DATE, 'HH24')) BETWEEN 12 AND 23 THEN 'afternoonSales'
+        END
+    ORDER BY ORDER_DATE
 	</select>
 
     <!-- 인기 메뉴 Top 3 조회 -->
@@ -91,7 +96,7 @@
 	
 	<!-- 대시보드 총 지출금액 가져오기 -->
 	<select id="getTotalExpends" resultType="expend">
-	SELECT COALESCE(SUM(AMOUNT),0) FROM EXPENDS
+	SELECT COALESCE(SUM(AMOUNT),0) FROM EXPENDS WHERE EXPEND_DATE = SYSDATE
 	</select>
 	
 	<!-- 대시보드 최근 6개월 지출내역 가져오기 -->
