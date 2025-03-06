@@ -116,8 +116,8 @@
 				MENU m ON od.MENU_NO = m.MENU_NO
 			LEFT JOIN 
 				MENU_OPTION mo ON od.OPTION_NO = mo.OPTION_NO
-			WHERE 
-				1=1
+    		WHERE 
+        		od.AMOUNT > 0
 				<if test="startDate != null and endDate != null">
 					AND TRUNC(o.ORDER_DATE) BETWEEN 
 						TO_DATE(#{startDate}, 'YYYY-MM-DD')
