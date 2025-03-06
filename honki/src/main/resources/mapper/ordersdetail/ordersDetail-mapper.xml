@@ -3,7 +3,7 @@
 
 <mapper namespace="ordersDetail">
 
-<insert id="insertOrderDetail">
+	<insert id="insertOrderDetail">
     MERGE INTO ORDERS_DETAIL T
     USING (SELECT #{orderNo} AS ORDER_NO, #{menuNo} AS MENU_NO, #{optionNo} AS OPTION_NO FROM DUAL) S
     ON (T.ORDER_NO = S.ORDER_NO AND T.MENU_NO = S.MENU_NO AND T.OPTION_NO = S.OPTION_NO)
@@ -12,18 +12,17 @@
     WHEN NOT MATCHED THEN
         INSERT (ORDER_NO, MENU_NO, AMOUNT, OPTION_NO, PRICE, STATUS)
         VALUES (#{orderNo}, #{menuNo}, #{amount}, #{optionNo}, #{price}, #{status})
-</insert>
+	</insert>
+	
+	<select id="getStockQuantity" resultType="int">
+        SELECT STOCK_QUANTITY FROM STOCK WHERE MENU_NO = #{menuNo}
+    </select>
 
 
-
-
-
-
-
-
-
-
-
-
+    <update id="decreaseStock">
+        UPDATE STOCK
+        SET STOCK_QUANTITY = STOCK_QUANTITY - #{amount}
+        WHERE MENU_NO = #{menuNo} AND STOCK_QUANTITY >= #{amount}
+    </update>
 
 </mapper>
