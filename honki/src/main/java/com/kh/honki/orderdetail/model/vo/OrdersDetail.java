@@ -5,6 +5,10 @@ import java.util.List;
 import lombok.Data;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class OrdersDetail {
 	private Integer detailId; // null 값 처리
 	private long orderNo;          
@@ -15,6 +19,11 @@ public class OrdersDetail {
     private int price;
     private int totalPrice;
     private String status = "Y";
+    
+    public OrdersDetail(int menuNo, int amount) {
+        this.menuNo = menuNo;
+        this.amount = amount;
+    }
     
 }
 

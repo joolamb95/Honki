@@ -34,4 +34,12 @@ public class OrdersDetailDao {
         }
         return count;
     }
+
+	public int getStockQuantity(int menuNo) {
+		return session.selectOne("ordersDetail.getStockQuantity",menuNo);
+	} 
+	
+	public int decreaseStock(int menuNo, int amount) {
+		  return session.update("ordersDetail.decreaseStock",new OrdersDetail(menuNo, amount)); 
+	}
 }
