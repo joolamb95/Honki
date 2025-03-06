@@ -41,7 +41,9 @@ public class FinanceDao {
 	}
 
 	public List<Map<String, Object>> getWeeklySales() {
-		return session.selectList("finance.getWeeklySales");
+		List<Map<String, Object>> result = session.selectList("finance.getWeeklySales");
+		System.out.println("✅ DB 조회 결과: " + result);
+		return result;
 	}
 
 	public List<Map<String, Object>> getTopMenus() {
