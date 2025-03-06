@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../../style/StockManagement.css';
+import Pagination from '../../components/Pagination';
 
 interface Stock {
     menuNo: number;
@@ -25,6 +26,8 @@ const StockManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState('menu'); // 'menu' 또는 'option'
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCategory, setSearchCategory] = useState('전체');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -113,6 +116,32 @@ const StockManagement: React.FC = () => {
         });
     }, [stockOptions, searchTerm, searchCategory]);
 
+    // 페이징된 데이터 계산
+    const getPaginatedData = (data: any[]) => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return data.slice(startIndex, endIndex);
+    };
+
+    // 총 페이지 수 계산
+    const getTotalPages = (totalItems: number) => {
+        return Math.ceil(totalItems / itemsPerPage);
+    };
+
+    // 페이지 변경 핸들러
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    // 필터링된 데이터에서 현재 페이지에 해당하는 항목만 추출
+    const currentItems = activeTab === 'menu' 
+        ? getPaginatedData(filteredStocks)
+        : getPaginatedData(filteredStockOptions);
+
+    const totalPages = activeTab === 'menu'
+        ? getTotalPages(filteredStocks.length)
+        : getTotalPages(filteredStockOptions.length);
+
     return (
         <div className="stock-management">
             <div className="stock-nav">
@@ -197,7 +226,7 @@ const StockManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredStocks.map((stock) => (
+                        {currentItems.map((stock) => (
                             <tr key={`${stock.menuNo}`}>
                                 <td>{stock.menuNo}</td>
                                 <td>{stock.menuName}</td>
@@ -220,7 +249,7 @@ const StockManagement: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredStockOptions.map((option) => (
+                        {currentItems.map((option) => (
                             <tr key={option.optionNo}>
                                 <td>{option.optionNo}</td>
                                 <td>{option.optionName}</td>
@@ -232,6 +261,12 @@ const StockManagement: React.FC = () => {
                     </tbody>
                 </table>
             )}
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 };

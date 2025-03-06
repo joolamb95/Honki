@@ -2,6 +2,7 @@ import React, {useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../../style/AddMenu.css';
 import axios from 'axios';
+import Pagination from '../../components/Pagination';
 
 // DB 테이블 구조에 맞는 인터페이스
 interface Menu {
@@ -23,6 +24,8 @@ const AddMenu: React.FC = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [menuToDelete, setMenuToDelete] = useState<number | null>(null);
     const [menuList, setMenuList] = useState<Menu[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     
     const [menuForm, setMenuForm] = useState<Menu>({
         menuNo: 0,
@@ -104,6 +107,23 @@ const AddMenu: React.FC = () => {
     useEffect(() => {
         fetchMenuList();
     }, []);
+
+    const getPaginatedData = (data: any[]) => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return data.slice(startIndex, endIndex);
+    };
+
+    const getTotalPages = (totalItems: number) => {
+        return Math.ceil(totalItems / itemsPerPage);
+    };
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const currentItems = getPaginatedData(menuList);
+    const totalPages = getTotalPages(menuList.length);
 
     const handleDeleteClick = (menuNo: number) => {
         setMenuToDelete(menuNo);
@@ -215,7 +235,7 @@ const AddMenu: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {menuList.map((menu) => (
+                    {currentItems.map((menu) => (
                             <tr key={menu.menuNo}>
                                 <td>{menu.menuNo}</td>
                                 <td>{menu.categoryName || '미분류'}</td>
@@ -246,6 +266,12 @@ const AddMenu: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
 
             {showModal && (
                 <div className="modal-view">

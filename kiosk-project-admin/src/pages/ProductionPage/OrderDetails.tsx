@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../../style/OrderDetails.css';
+import Pagination from '../../components/Pagination';
 
 interface OrderDetail {
     orderNo: number;        // number로 변경
@@ -18,9 +19,11 @@ const OrderDetails: React.FC = () => {
     const [searchCategory, setSearchCategory] = useState('전체');
     const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('2025-02-01T00:00');
-    const [endDate, setEndDate] = useState('2025-02-28T23:59');
+    const [endDate, setEndDate] = useState('2025-12-31T23:59');
     const [appliedDateRange, setAppliedDateRange] = useState({ start: startDate, end: endDate });
     const [orders, setOrders] = useState<OrderDetail[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -61,10 +64,9 @@ const OrderDetails: React.FC = () => {
         // 최초 데이터 로드
         fetchOrders();
 
-        // 1분마다 데이터 갱신
         const intervalId = setInterval(() => {
             fetchOrders();
-        }, 60000); 
+        }, 5000); 
 
         // 컴포넌트 언마운트 시 인터벌 정리
         return () => clearInterval(intervalId);
@@ -104,6 +106,23 @@ const OrderDetails: React.FC = () => {
             return isInDateRange && matchesSearch;
         });
     }, [orders, startDate, endDate, searchTerm, searchCategory]);
+
+    const getPaginatedData = (data: any[]) => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return data.slice(startIndex, endIndex);
+    };
+
+    const getTotalPages = (totalItems: number) => {
+        return Math.ceil(totalItems / itemsPerPage);
+    };
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const currentItems = getPaginatedData(filteredOrders);
+    const totalPages = getTotalPages(filteredOrders.length);
 
     return (
         <div className="stock-management">
@@ -187,7 +206,7 @@ const OrderDetails: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredOrders.map((order, index) => (
+                        {currentItems.map((order, index) => (
                             <tr key={`${order.orderNo}-${index}`}>
                                 <td>{order.orderNo}</td>
                                 <td>{order.tableNo}</td>
@@ -201,6 +220,12 @@ const OrderDetails: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 };

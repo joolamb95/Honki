@@ -100,15 +100,4 @@ public class StockDao {
 		sqlSession.delete("stock.deleteStockOption", optionNo);
 	}
 
-	public void decreaseMenuStock(int orderNo, int amount) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("orderNo", orderNo);
-		params.put("amount", amount);
-		sqlSession.update("stock.decreaseMenuStock", params);
-	}
-
-	public void decreaseOptionStock(int orderNo) {
-		sqlSession.update("stock.decreaseOptionStock", orderNo);
-	}
-
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import '../../style/StockOrder.css';
+import Pagination from '../../components/Pagination';
 
 interface StockItem {
     menuNo: number;
@@ -36,6 +37,8 @@ const StockOrder: React.FC = () => {
     const [optionOrderQuantities, setOptionOrderQuantities] = useState<OrderQuantity>({});
     const navigate = useNavigate();
     const location = useLocation();
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         if (orderType === 'menu') {
@@ -182,6 +185,30 @@ const StockOrder: React.FC = () => {
         });
     }, [options, searchTerm, searchCategory]);
 
+    // 페이징 관련 함수들
+    const getPaginatedData = (data: any[]) => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return data.slice(startIndex, endIndex);
+    };
+
+    const getTotalPages = (totalItems: number) => {
+        return Math.ceil(totalItems / itemsPerPage);
+    };
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    // 현재 페이지 데이터 계산
+    const currentItems = orderType === 'menu' 
+        ? getPaginatedData(filteredStocks)
+        : getPaginatedData(filteredOptions);
+
+    const totalPages = orderType === 'menu'
+        ? getTotalPages(filteredStocks.length)
+        : getTotalPages(filteredOptions.length);
+
     return (
         <div className="stock-management">
             <div className="stock-nav">
@@ -266,41 +293,24 @@ const StockOrder: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {orderType === 'menu' ? (
-                        filteredStocks.map((stock) => (
-                            <tr key={stock.menuNo}>
-                                <td>M{stock.menuNo}</td>
-                                <td>{stock.menuName}</td>
-                                <td>{stock.stockQuantity}</td>
-                                <td>
-                                    <input 
-                                        type="number"
-                                        min={0}
-                                        value={menuOrderQuantities[stock.menuNo] || ''}
-                                        onChange={(e) => handleQuantityChange(stock.menuNo, parseInt(e.target.value) || 0)}
-                                    />
-                                </td>
-                                <td>{menuOrderQuantities[stock.menuNo] ? `${(menuOrderQuantities[stock.menuNo] * 1000).toLocaleString()}원` : '0원'}</td>
-                            </tr>
-                        ))
-                    ) : (
-                        filteredOptions.map((option) => (
-                            <tr key={option.optionNo}>
-                                <td>O{option.optionNo}</td>
-                                <td>{option.optionName}</td>
-                                <td>{option.stockOptionQuantity}</td>
-                                <td>
-                                    <input 
-                                        type="number"
-                                        min={0}
-                                        value={optionOrderQuantities[option.optionNo] || ''}
-                                        onChange={(e) => handleQuantityChange(option.optionNo, parseInt(e.target.value) || 0)}
-                                    />
-                                </td>
-                                <td>{optionOrderQuantities[option.optionNo] ? `${(optionOrderQuantities[option.optionNo] * 1000).toLocaleString()}원` : '0원'}</td>
-                            </tr>
-                        ))
-                    )}
+                    {currentItems.map((item) => (
+                        <tr key={item.menuNo || item.optionNo}>
+                            <td>{orderType === 'menu' ? `M${item.menuNo}` : `O${item.optionNo}`}</td>
+                            <td>{orderType === 'menu' ? item.menuName : item.optionName}</td>
+                            <td>{orderType === 'menu' ? item.stockQuantity : item.stockOptionQuantity}</td>
+                            <td>
+                                <input 
+                                    type="number"
+                                    min={0}
+                                    value={orderType === 'menu' ? (menuOrderQuantities[item.menuNo] || '') : (optionOrderQuantities[item.optionNo] || '')}
+                                    onChange={(e) => handleQuantityChange(item.menuNo || item.optionNo, parseInt(e.target.value) || 0)}
+                                />
+                            </td>
+                            <td>{orderType === 'menu' ? 
+                                `${((menuOrderQuantities[item.menuNo] || 0) * 1000).toLocaleString()}원` : 
+                                `${((optionOrderQuantities[item.optionNo] || 0) * 1000).toLocaleString()}원`}</td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
             
@@ -309,6 +319,12 @@ const StockOrder: React.FC = () => {
                     주문
                 </button>
             </div>
+
+            <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 };

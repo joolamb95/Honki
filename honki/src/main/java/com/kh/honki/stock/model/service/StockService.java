@@ -87,16 +87,5 @@ public class StockService {
 	public List<Option> getOptionList() {
 		return stockDao.getOptionList();
 	}
-	
-	@Transactional
-	public void decreaseStock(int orderNo, int amount) {
-		try {
-			stockDao.decreaseMenuStock(orderNo, amount);
-			
-			stockDao.decreaseOptionStock(orderNo);
-		} catch (Exception e) {
-			throw new RuntimeException("재고 차감 중 오류 발생: " + e.getMessage());
-		}
-	}
 
 }

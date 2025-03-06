@@ -280,27 +280,6 @@
 			DELETE FROM STOCK_OPTION
 			WHERE OPTION_NO = #{optionNo}
 		</delete>
-		
-		<update id="decreaseMenuStock">
-			UPDATE STOCK
-			SET STOCK_QUANTITY = STOCK_QUANTITY - #{amount}
-			WHERE MENU_NO = (
-				SELECT MENU_NO
-				FROM ORDERS_DETAIL
-				WHERE ORDER_NO = #{orderNo}
-			)
-		</update>
-		
-		<update id="decreaseOptionStock">
-			UPDATE STOCK_OPTION 
-			SET STOCK_OPTION_QUANTITY = STOCK_OPTION_QUANTITY - 1
-			WHERE OPTION_NO = (
-				SELECT OPTION_NO 
-				FROM ORDERS_DETAIL 
-				WHERE ORDER_NO = #{orderNo}
-				AND OPTION_NO > 0
-			)
-		</update>
 </mapper>
 
 
