@@ -65,7 +65,7 @@ const Chat: React.FC<ChatProps> = ({ tableNo, onClose, initialMessage, stompClie
   return (
     <div>
       <div className="chat-messages" ref={chatContainerRef} style={{ overflowY: "auto", maxHeight: "300px" }}>
-        {chatMessages.length === 0 && <p>:말풍선:</p>}
+        {chatMessages.length === 0 && <p>💬</p>}
         {chatMessages.map((msg, index) => (
           <div key={index} className={`chat-message ${msg.sender === "owner" ? "other-message" : "my-message"}`}>
             <strong>{msg.sender}:</strong> {msg.content}

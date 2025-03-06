@@ -124,7 +124,7 @@ const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ onChange, onSend, onC
           "{enter}": "⏎",
           "{shift}": "⇧",
           "{space}": "␣",
-          "{lang}": ":자오선이_있는_지구:" // 한/영 전환 버튼
+          "{lang}": "한/영" // 한/영 전환 버튼
         }}
       />
       <div className="keyboard-buttons">

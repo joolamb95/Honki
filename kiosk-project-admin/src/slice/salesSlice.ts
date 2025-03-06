@@ -83,7 +83,7 @@ export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async
 
   console.log("✅ groupedSales 변환 후:", groupedSales);
 
-  return Object.values(groupedSales);
+  return structuredClone(Object.values(groupedSales)); // ✅ Redux 상태 강제 업데이트
 });
 
 

@@ -105,15 +105,23 @@ const Dashboard: React.FC = () => {
         const totalExpends = expendsRes.data;  // 총 지출액
         const netProfit = totalRevenue - totalExpends; // 순이익
 
-        setSalesData({ totalRevenue, totalOrders, netProfit });
+        setSalesData((prevState) => ({
+          ...prevState,
+          totalRevenue,
+          totalOrders,
+          netProfit,
+        }));
       } catch (error) {
         console.error("데이터 가져오기 실패:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [chartData]);
 
+  useEffect(() => {
+    console.log("📌 최신 salesData 상태:", salesData);
+  }, [salesData]); // 상태 변경 감지
 
   return (
     <div className="dashboard">
