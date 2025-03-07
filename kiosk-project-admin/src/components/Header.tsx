@@ -4,7 +4,7 @@ import '../style/Header.css';
 const Header: React.FC = () => {
     return (
         <div className="header">
-            <h1>우리 술 한잔 할래요?</h1>
+            <h1>혼돈의 키오스크 - 사장님</h1>
         </div>
     );
 };

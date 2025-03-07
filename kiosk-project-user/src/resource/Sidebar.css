@@ -103,3 +103,13 @@
 .cate-button2:hover {
   background: #e74c3c;
 }
+
+.chat-badge {
+  margin-left: 5px;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  }

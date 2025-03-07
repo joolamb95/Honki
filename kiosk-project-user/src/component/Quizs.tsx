@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "../resource/Quiz.css";
 
-const API_URL = "http://localhost:5001/get-quiz";
-const AI_URL = "http://localhost:5001/generate-options";
+const API_URL = "http://192.168.30.192:5001/get-quiz";
+const AI_URL = "http://192.168.30.192:5001/generate-options";
 
 // 부모(Menus)에서 onClose를 받아옴
 const Quiz = ({ onClose }: { onClose?: () => void }) => {

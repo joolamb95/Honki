@@ -21,9 +21,11 @@ import com.kh.honki.payment.model.vo.Payment;
 import com.kh.honki.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderDao orderDao;
@@ -42,10 +44,13 @@ public class OrderService {
     
     @Transactional
     public int createOrder(Order order) {
+    	log.info("📌 OrderService - 받은 주문 정보: {}", order);
         Payment payment = new Payment();
         payment.setPaymentMethod(order.getPaymentMethod());
         payment.setAmount(order.getTotalPrice());
         payment.setStatus("Y");
+        
+        log.info("📌 저장될 결제 정보: {}", payment); // ✅ DB에 들어가기 전 값 확인
 
         int paymentResult = paymentDao.insertPayment(payment);
         if (paymentResult == 0) {
