@@ -88,7 +88,7 @@ const Cart = () => {
       
         let recommendedMenuNames: string[] = [];
         try {
-            const response = await fetch("http://localhost:5001/recommend", {
+            const response = await fetch("http://192.168.30.192:5001/recommend", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -287,11 +287,17 @@ const Cart = () => {
             await new Promise(resolve => setTimeout(resolve, 500));
 
             const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
-            const customerKey = `table${tableNo}`; // ✅ 테이블 번호가 `null`이 아닐 경우만 사용
+            const customerKey = `table${tableNo}`;
 
             try {
+                // ✅ PaymentWidget 로드
                 const paymentWidget = await loadPaymentWidget(clientKey, customerKey);
+                paymentWidgetRef.current = paymentWidget;
                 console.log("📌 결제 위젯 로드 완료:", paymentWidget);
+
+                // ✅ PaymentMethodsWidget 로드 및 저장
+                const paymentMethodsWidget = paymentWidget.renderPaymentMethods("#payment-widget", totalCartPrice);
+  
 
                 const paymentContainer = document.getElementById("payment-widget");
                 if (paymentContainer) {
@@ -301,7 +307,7 @@ const Cart = () => {
                     console.error("❌ 결제 위젯 요소를 찾을 수 없음");
                 }
 
-                paymentWidgetRef.current = paymentWidget;
+
             } catch (error) {
                 console.error("❌ 결제 위젯 초기화 중 오류:", error);
             }
@@ -339,31 +345,51 @@ const Cart = () => {
 
             const orderId = `ORDER_${Date.now()}`;
 
+
             // TossPayments 결제 요청
             if (!paymentWidgetRef.current) {
                 throw new Error("❌ 결제 위젯이 아직 로드되지 않았습니다!");
             }
+
+        // ✅ 올바른 방식으로 결제 수단 가져오기
+        const paymentMethodsWidget = paymentWidgetRef.current.renderPaymentMethods("#payment-widget", totalCartPrice);
+        const selectedPaymentMethod = paymentMethodsWidget.getSelectedPaymentMethod();
+
+        console.log("📌 선택된 결제 수단 전체 데이터:", selectedPaymentMethod);
+        console.log("📌 선택된 결제 방식:", selectedPaymentMethod?.method);
+        console.log("📌 선택된 간편결제 제공사:", selectedPaymentMethod?.easyPay?.provider);
+
+
 
             const response = await paymentWidgetRef.current.requestPayment({
                 orderId,
                 orderName: "키오스크 주문 결제",
             });
 
+
+
             if (!response || !response.paymentKey) {
                 throw new Error("❌ 결제 키를 가져올 수 없음!");
             }
+
+            const paymentMethod =
+            selectedPaymentMethod?.easyPay?.provider // ✅ 간편결제 제공사 (카카오페이, 네이버페이 등)
+            || selectedPaymentMethod?.method // ✅ 신용카드, 계좌이체, 가상계좌 등
+            || response.paymentType; // ✅ TossPayments 기본 결제 타입
 
             // 주문 데이터 처리
             const orderData = {
                 tableNo,  // 동적으로 가져온 테이블 번호 사용
                 paymentNo: response.paymentKey,
                 totalPrice: totalCartPrice,
+                paymentMethod,
                 orderItems: cartItems.map(item => ({
                     menuNo: item.menuNo,
                     optionNos: item.selectedOptions.map(option => option.optionNo),
                 })),
             };
 
+            console.log("📌 최종 저장될 결제 방식:", selectedPaymentMethod?.method || selectedPaymentMethod?.easyPay?.provider || response.paymentType);
             console.log("📌 서버로 보낼 주문 정보:", JSON.stringify(orderData, null, 2));
 
             // 주문 정보 저장

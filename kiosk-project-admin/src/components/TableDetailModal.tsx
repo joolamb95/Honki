@@ -69,7 +69,7 @@ return acc + itemTotal + subItemTotal;
   };
 
   if (!tableNo || !tableData) return null;
-
+ 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="table-detail-modal" onClick={(e) => e.stopPropagation()}>

@@ -38,6 +38,7 @@ public class OrderController {
 	// 주문 생성
 	@PostMapping("/create")
 	public ResponseEntity<?> createOrder(@RequestBody Order order) {
+		log.info("📌 받은 주문 데이터: {}", order); // ✅ 주문 데이터 확인
 	    try {
 	        if (order == null || order.getOrderItems().isEmpty()) {
 	            return ResponseEntity.badRequest().body("❌ 주문 목록이 비어 있습니다.");

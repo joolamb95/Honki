@@ -252,7 +252,9 @@ const Hall: React.FC = () => {
   useEffect(() => {
     if (orderUpdates) {
         console.log("📩 WebSocket 주문 업데이트 감지, 최신 데이터 반영");
-        fetchAllOrders();
+        fetchAllOrders().then(() => {
+          setTables((prevTables) => [...prevTables]); // 🔥 강제 렌더링 트리거
+      });
     }
   }, [orderUpdates]);
 
@@ -337,7 +339,7 @@ const Hall: React.FC = () => {
           setSelectedDetailTable({
             tableNo: data[0]?.tableNo || 0,
             orderNo: data[0]?.orderNo || 0,
-            time: data[0]?.orderDate ? new Date(data[0].orderDate).toLocaleString() : "-",
+            time: data[0]?.orderDate ? new Date(data[0].orderDate).toLocaleDateString() : "-", // 백엔드에서 시분초 를 넘겨받지 못해 임시로 변경 (toLoacleString)
             totalAmount: data[0]?.totalPrice ? data[0].totalPrice.toLocaleString() + "원" : "0원",
             items: mergedItems.map((item: OrderDetail) => ({
                 menuNo: item.menuNo,
