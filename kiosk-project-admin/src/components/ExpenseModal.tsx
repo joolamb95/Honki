@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../style/ExpenseModal.css"; 
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../store"; // ✅ Redux 스토어 import
+import { AppDispatch } from "../store"; // Redux 스토어 import
 import { fetchExpends } from "../slice/expendSlice";
 
 export interface Expense {
@@ -30,55 +30,55 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
 
   useEffect(() => {
     setEditedExpenses([...expenses]);
-    setDeletedExpenses([]); // ✅ 모달 열릴 때 삭제 목록 초기화
+    setDeletedExpenses([]); // 모달 열릴 때 삭제 목록 초기화
   }, [selectedMonth, expenses]);
 
-  // ✅ 값 변경 핸들러 (UI에만 반영)
+  // 값 변경 핸들러 (UI에만 반영)
   const handleChange = (index: number, field: keyof Expense, value: string | number) => {
     setEditedExpenses((prev) =>
       prev.map((ex, i) => (i === index ? { ...ex, [field]: value } : ex))
     );
   };
 
-  // ✅ 새 지출 내역 추가 (DB 저장 X)
+  // 새 지출 내역 추가 (DB 저장 X)
   const handleAddRow = () => {
     setEditedExpenses((prev) => [
       ...prev,
       {
-        expendNo: 0, // ✅ 새 항목의 경우 DB에서 자동 생성되므로 0 설정
+        expendNo: 0, // 새 항목의 경우 DB에서 자동 생성되므로 0 설정
         category: "",
         amount: 0,
-        expendDate: new Date().toISOString().split("T")[0], // ✅ 오늘 날짜 기본값
+        expendDate: new Date().toISOString().split("T")[0], // 오늘 날짜 기본값
         description: "",
       },
     ]);
   };
 
-  // ✅ 선택한 지출 내역 삭제 (DB 저장 X)
+  // 선택한 지출 내역 삭제 (DB 저장 X)
   const handleDeleteRow = (index: number, expendNo: number) => {
     if (expendNo !== 0) {
-      setDeletedExpenses((prev) => [...prev, expendNo]); // ✅ 삭제할 데이터 저장
+      setDeletedExpenses((prev) => [...prev, expendNo]); // 삭제할 데이터 저장
     }
-    setEditedExpenses((prev) => prev.filter((_, i) => i !== index)); // ✅ UI에서 즉시 제거
+    setEditedExpenses((prev) => prev.filter((_, i) => i !== index)); // UI에서 즉시 제거
   };
 
-  // ✅ 저장 버튼 클릭 시 (삭제 + 추가 + 수정 데이터 반영)
+  // 저장 버튼 클릭 시 (삭제 + 추가 + 수정 데이터 반영)
   const handleSave = async () => {
     try {
-      // 🚀 1️⃣ 삭제 요청 (deletedExpenses에 있는 expendNo 리스트)
+      // 삭제 요청 (deletedExpenses에 있는 expendNo 리스트)
       if (deletedExpenses.length > 0) {
         await Promise.all(
           deletedExpenses.map((id) => axios.delete(`http://localhost:8080/honki/finance/expends/${id}`))
         );
       }
 
-      // 🚀 2️⃣ 신규 데이터 저장 (expendNo가 0인 경우)
+      // 신규 데이터 저장 (expendNo가 0인 경우)
       const newExpenses = editedExpenses.filter((expense) => expense.expendNo === 0);
       if (newExpenses.length > 0) {
         await axios.post("http://localhost:8080/honki/finance/expends", newExpenses);
       }
 
-      // 🚀 3️⃣ 기존 데이터 업데이트 (수정된 데이터만 반영)
+      // 기존 데이터 업데이트 (수정된 데이터만 반영)
       const updatedExpenses = editedExpenses.filter(
         (expense) =>
           expense.expendNo !== 0 &&
@@ -100,7 +100,7 @@ const ExpenseModal: React.FC<ExpenseModalProps> = ({
         );
       }
 
-      // ✅ Redux 상태 업데이트
+      // Redux 상태 업데이트
       dispatch(fetchExpends(selectedMonth));
       onClose();
     } catch (error) {
