@@ -11,19 +11,19 @@ export interface Expense {
 
 interface ExpendState {
   expenses: Expense[]; // 현재 월 데이터
-  prevExpenses: Expense[]; // ✅ 이전 달 데이터 저장
+  prevExpenses: Expense[]; // 이전 달 데이터 저장
   availableMonths: string[];
   expensesData: Record<string, number>;
 }
 
 const initialState: ExpendState = {
   expenses: [],
-  prevExpenses: [], // ✅ 초기값 추가
+  prevExpenses: [], // 초기값 추가
   availableMonths: [],
   expensesData: {},
 };
 
-// ✅ 지출 목록 불러오기 (현재 월과 이전 월 동시 조회)
+// 지출 목록 불러오기 (현재 월과 이전 월 동시 조회)
 export const fetchExpends = createAsyncThunk(
   "expends/fetchExpends",
   async (yearMonth: string) => {
@@ -34,7 +34,7 @@ export const fetchExpends = createAsyncThunk(
   }
 );
 
-// ✅ 사용 가능한 월 목록 불러오기
+// 사용 가능한 월 목록 불러오기
 export const fetchAvailableMonths = createAsyncThunk(
   "expends/fetchAvailableMonths",
   async () => {
@@ -52,17 +52,17 @@ const expendsSlice = createSlice({
       .addCase(fetchExpends.fulfilled, (state, action) => {
         if (!action.payload) return;
 
-        // ✅ 백엔드에서 받은 데이터 구조 확인
+        // 백엔드에서 받은 데이터 구조 확인
         const { currentMonth, prevMonth } = action.payload;
 
-        // ✅ 현재 월 데이터 저장
+        // 현재 월 데이터 저장
         state.expenses = currentMonth;
         state.expensesData[action.meta.arg] = currentMonth.reduce(
           (sum: number, expense: Expense) => sum + (expense.amount || 0),
           0
         );
 
-        // ✅ 이전 월 데이터 저장
+        // 이전 월 데이터 저장
         state.prevExpenses = prevMonth;
         const prevMonthKey = getPrevMonth(action.meta.arg);
         state.expensesData[prevMonthKey] = prevMonth.reduce(
@@ -76,7 +76,7 @@ const expendsSlice = createSlice({
   },
 });
 
-// ✅ 이전 월 계산 함수 추가
+// 이전 월 계산 함수 추가
 const getPrevMonth = (yearMonth: string) => {
   const [year, month] = yearMonth.split("-").map(Number);
   const prevMonth = month === 1 ? 12 : month - 1;
