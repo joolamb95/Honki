@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// ✅ 타입 정의
+// 타입 정의
 export interface MenuItem {
   id: number;
   rank: number;
@@ -30,7 +30,7 @@ const initialState: SalesState = {
   loading: false,
 };
 
-// ✅ 이번 달 매출 가져오기
+// 이번 달 매출 가져오기
 export const fetchMonthlySales = createAsyncThunk(
   "sales/fetchMonthlySales",
   async (yearMonth: string) => {
@@ -45,23 +45,23 @@ export const fetchMonthlySales = createAsyncThunk(
   }
 );
 
-// ✅ 이번 주 매출 가져오기
+// 이번 주 매출 가져오기
 export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async () => {
   const response = await axios.get("http://localhost:8080/honki/finance/sales/weekly");
 
-  console.log("✅ 원본 API 응답:", response.data);
+  console.log("원본 API 응답:", response.data);
 
   if (!response.data || response.data.length === 0) {
-    console.warn("⚠️ API에서 반환된 데이터가 없습니다.");
+    console.warn("API에서 반환된 데이터가 없습니다.");
     return [];
   }
 
-  // ✅ 이번 주 월요일을 기준으로 7일간 필터링
+  // 이번 주 월요일을 기준으로 7일간 필터링
   const today = new Date();
   const monday = new Date(today);
   monday.setDate(today.getDate() - today.getDay() + 1); // 이번 주 월요일
 
-  // ✅ 데이터를 요일 기준으로 그룹화
+  // 데이터를 요일 기준으로 그룹화
   const groupedSales: Record<string, { day: string; morningSales: number; afternoonSales: number }> = {};
 
   response.data.forEach((item: any) => {
@@ -81,9 +81,9 @@ export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async
     }
   });
 
-  console.log("✅ groupedSales 변환 후:", groupedSales);
+  console.log("groupedSales 변환 후:", groupedSales);
 
-  return structuredClone(Object.values(groupedSales)); // ✅ Redux 상태 강제 업데이트
+  return structuredClone(Object.values(groupedSales)); // Redux 상태 강제 업데이트
 });
 
 
@@ -91,7 +91,7 @@ export const fetchWeeklySales = createAsyncThunk("sales/fetchWeeklySales", async
 
 
 
-// ✅ 인기 메뉴 가져오기
+// 인기 메뉴 가져오기
 export const fetchTopMenus = createAsyncThunk(
   "sales/fetchTopMenus",
   async () => {
@@ -113,11 +113,11 @@ const salesSlice = createSlice({
         state.monthlySales = action.payload;
       })
       .addCase(fetchWeeklySales.fulfilled, (state, action) => {
-        console.log("✅ fetchWeeklySales 응답 데이터:", action.payload);
+        console.log("fetchWeeklySales 응답 데이터:", action.payload);
         state.weeklySales = action.payload;
       })
       .addCase(fetchTopMenus.fulfilled, (state, action) => {
-        console.log("📌 fetchTopMenus 응답 데이터:", action.payload);
+        console.log("fetchTopMenus 응답 데이터:", action.payload);
         state.topMenus = action.payload;
       });
   },
