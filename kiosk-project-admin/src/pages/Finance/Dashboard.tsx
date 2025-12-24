@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
     fetchChartData();
   }, []);
 
- // ✅ 총 매출액과 총 지출액 계산 (chartData 활용)
+ // 총 매출액과 총 지출액 계산 (chartData 활용)
  const totalRevenue = chartData.reduce((sum, data) => sum + data.revenue, 0);
  const totalExpends = chartData.reduce((sum, data) => sum + data.expense, 0);
 
@@ -120,7 +120,7 @@ const Dashboard: React.FC = () => {
   }, [chartData]);
 
   useEffect(() => {
-    console.log("📌 최신 salesData 상태:", salesData);
+    console.log("최신 salesData 상태:", salesData);
   }, [salesData]); // 상태 변경 감지
 
   return (
