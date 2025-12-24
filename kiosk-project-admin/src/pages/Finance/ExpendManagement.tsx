@@ -12,16 +12,16 @@ const ExpendManagement: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Redux 상태에서 가져오기
+  // Redux 상태에서 가져오기
   const { expenses, availableMonths, expensesData } = useSelector((state: RootState) => state.expends);
   const [selectedMonth, setSelectedMonth] = useState("");
 
-  // ✅ DB에서 월 목록 가져오기
+  // DB에서 월 목록 가져오기
   useEffect(() => {
     dispatch(fetchAvailableMonths());
   }, [dispatch]);
 
-  // ✅ 월 목록이 로드되면 최신 월을 기본값으로 설정
+  // 월 목록이 로드되면 최신 월을 기본값으로 설정
   useEffect(() => {
     if (availableMonths.length > 0) {
       setSelectedMonth(availableMonths[0]);  // 최신 월로 설정
@@ -29,19 +29,19 @@ const ExpendManagement: React.FC = () => {
     }
   }, [availableMonths, dispatch]);
 
-  // ✅ 선택된 월이 변경되면 Redux에서 데이터 가져오기
+  // 선택된 월이 변경되면 Redux에서 데이터 가져오기
   useEffect(() => {
     if (selectedMonth) {
       dispatch(fetchExpends(selectedMonth));
     }
   }, [selectedMonth, dispatch, location.pathname]);
 
-  // ✅ 모달창 상태 관리
+  // 모달창 상태 관리
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openExpenseModal = () => setIsModalOpen(true);
   const closeExpenseModal = () => setIsModalOpen(false);
 
-  // ✅ 지난달 데이터 가져오기
+  // 지난달 데이터 가져오기
   const getPrevMonth = (yearMonth: string) => {
     const [year, month] = yearMonth.split("-").map(Number);
     const prevMonth = month === 1 ? 12 : month - 1;
@@ -53,7 +53,7 @@ const ExpendManagement: React.FC = () => {
   const totalCurrentMonth = expensesData[selectedMonth] ?? 0;
   const totalPrevMonth = expensesData[getPrevMonth(selectedMonth)] !== undefined ? expensesData[prevMonth] : 0;
 
-  // ✅ 바 차트 데이터 구성
+  // 바 차트 데이터 구성
   const barChartData = [
     {
       name: "이전달 vs 이번달",
@@ -62,17 +62,17 @@ const ExpendManagement: React.FC = () => {
     },
   ];
 
-  // ✅ 파이 차트 데이터 변환
+  // 파이 차트 데이터 변환
   const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const pieChartData = totalExpense
     ? expenses.map(expense => ({
         name: expense.category,
-        value: parseFloat(((expense.amount / totalExpense) * 100).toFixed(2)), // ✅ 백분율 계산
+        value: parseFloat(((expense.amount / totalExpense) * 100).toFixed(2)), // 백분율 계산
         amount: expense.amount,
       }))
     : [];
 
-  // ✅ 파이 차트 색상 배열
+  // 파이 차트 색상 배열
   const COLORS = ["#7B61FF", "#FF6B6B", "#2DC3E8", "#FFA63D", "#4C84FF"];
 
   return (
@@ -129,9 +129,9 @@ const ExpendManagement: React.FC = () => {
         </table>
       </div>
 
-      {/* 📌 차트 섹션 */}
+      {/* 차트 섹션 */}
       <div className="chartSection">
-        {/* 📌 파이 차트 */}
+        {/* 파이 차트 */}
         <div className="chartBox1">
           <div className="chartTitle">지출비율</div>
           <ResponsiveContainer width="100%" height={300}>
@@ -154,7 +154,7 @@ const ExpendManagement: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* 📌 바 차트 */}
+        {/* 바 차트 */}
         <div className="chartBox2">
           <div className="chartTitle">지난달 대비 지출액</div>
           <ResponsiveContainer width="100%" height={300}>
