@@ -18,7 +18,7 @@ interface TableProps {
   unreadCount?:number;
 }
 
-// ✅ TableOrder 타입을 반영하여 selectedDetailTable 타입을 수정
+// TableOrder 타입을 반영하여 selectedDetailTable 타입을 수정
 interface TableOrder {
   tableNo: number;
   orderNo: number;
@@ -34,7 +34,7 @@ const Table: React.FC<TableProps> = ({
   time,
   onRightClick,
   onChatClick,
-  unreadCount = 0  // ✅ 기본값 0으로 설정
+  unreadCount = 0  // 기본값 0으로 설정
 }) => {
   return (
     <div 
@@ -58,7 +58,7 @@ const Table: React.FC<TableProps> = ({
         <div style={{display:'flex',justifyContent:'space-between', alignItems:'center', width:'100%'}}>
           {totalAmount ? <div className="table-total">{totalAmount}</div> : <div className="table-total">0원</div>}
         
-              {/* ✅ 이모티콘 버튼에 뱃지 추가 */}
+              {/* 이모티콘 버튼에 뱃지 추가 */}
               <button 
                         className="chat-icon" 
                         onClick={(e) => {
@@ -133,14 +133,14 @@ const Hall: React.FC = () => {
         return;
       }
       const data = await response.json();
-      console.log("📌 API 응답 데이터:", data);
+      console.log("API 응답 데이터:", data);
   
       if (!Array.isArray(data) || data.length === 0) {
-        console.warn("⚠️ 전체 주문 내역이 비어 있거나 올바른 배열이 아닙니다.");
+        console.warn("전체 주문 내역이 비어 있거나 올바른 배열이 아닙니다.");
         return;
       }
   
-      // ✅ 테이블별 데이터 매핑
+      // 테이블별 데이터 매핑
       const tableOrdersMap: { [key: number]: OrderDetail[] } = {};
   
       data.forEach((order: any) => {
@@ -150,15 +150,15 @@ const Hall: React.FC = () => {
           tableOrdersMap[order.tableNo] = [];
         }
   
-        // ✅ 주문 항목 그룹화 (같은 menuNo지만 옵션이 다르면 하나로 묶기)
+        // 주문 항목 그룹화 (같은 menuNo지만 옵션이 다르면 하나로 묶기)
         const key = `${order.orderNo}-${order.menuNo}`;
   
         let optionString:string = "";
         if (order.optionList) {
           if (Array.isArray(order.optionList)) {
-            optionString = (order.optionList as number[]) // 🔥 타입 단언 추가
-              .filter(opt => opt !== 0) // 🔥 숫자인 경우만 처리
-              .map(opt => opt.toString()) // 🔥 string으로 변환
+            optionString = (order.optionList as number[]) // 타입 단언 추가
+              .filter(opt => opt !== 0) // 숫자인 경우만 처리
+              .map(opt => opt.toString()) // string으로 변환
               .join(", ");
           } else {
             optionString = order.optionList.toString();
@@ -184,15 +184,15 @@ const Hall: React.FC = () => {
             menuName: order.menuName,
             amount: order.totalAmount,
             price: order.totalPrice,
-            optionList: order.optionList ?? "", // ✅ optionList가 없으면 빈 문자열
-            optionNo: optionString, // ✅ 새로운 필드 추가
+            optionList: order.optionList ?? "", // optionList가 없으면 빈 문자열
+            optionNo: optionString, // 새로운 필드 추가
           });
         }
       });
   
-      console.log("📌 매핑된 테이블 데이터:", tableOrdersMap);
+      console.log("매핑된 테이블 데이터:", tableOrdersMap);
   
-      // ✅ 상태 업데이트
+      // 상태 업데이트
       setTables(prevTables =>
         prevTables.map(table => {
           const mergedItems = tableOrdersMap[table.tableNo] || [];
@@ -205,7 +205,7 @@ const Hall: React.FC = () => {
             };
           }
   
-          // ✅ 총금액 계산
+          // 총금액 계산
           const newTotal = mergedItems.reduce((acc, it) => acc + it.price, 0);
   
           return {
@@ -251,9 +251,9 @@ const Hall: React.FC = () => {
   // 주문 업데이트가 감지되면 다시 데이터 불러오기
   useEffect(() => {
     if (orderUpdates) {
-        console.log("📩 WebSocket 주문 업데이트 감지, 최신 데이터 반영");
+        console.log("WebSocket 주문 업데이트 감지, 최신 데이터 반영");
         fetchAllOrders().then(() => {
-          setTables((prevTables) => [...prevTables]); // 🔥 강제 렌더링 트리거
+          setTables((prevTables) => [...prevTables]); // 강제 렌더링 트리거
       });
     }
   }, [orderUpdates]);
@@ -285,7 +285,7 @@ const Hall: React.FC = () => {
       return newUnread;
     }, [reduxChatMessages, selectedChatTable]);
 
-    // ✅ 테이블 상세 정보 가져오기
+    // 테이블 상세 정보 가져오기
     const handleDetailView = async () => {
       if (!contextMenu) return;
   
@@ -296,10 +296,10 @@ const Hall: React.FC = () => {
           }
   
           const data = await response.json();
-          console.log("📌 API 응답 데이터:", data);
+          console.log("API 응답 데이터:", data);
   
           if (!data || data.length === 0) {
-              console.warn("⚠️ API 응답이 비어 있음");
+              console.warn("API 응답이 비어 있음");
               setSelectedDetailTable({
                   tableNo: contextMenu.tableNo,
                   orderNo: 0,
@@ -311,22 +311,22 @@ const Hall: React.FC = () => {
               return;
           }
   
-          // ✅ 주문 항목 그룹화
+          // 주문 항목 그룹화
           const allItems: OrderDetail[] = data.reduce((acc: OrderDetail[], order: any) => {
               return acc.concat(order.orderItems || []);
           }, []);
   
-          // ✅ 같은 메뉴명을 그룹화하면서 옵션 처리
+          // 같은 메뉴명을 그룹화하면서 옵션 처리
           const groupedMap = allItems.reduce((acc: { [key: string]: OrderDetail }, item) => {
             
-          // ✅ 옵션 포함하여 키 생성
+          // 옵션 포함하여 키 생성
           const optionKey = item.optionList && Array.isArray(item.optionList) ? JSON.stringify(item.optionList.sort()) : "no-option";
           const key = `${item.menuName}-${optionKey}`;
               if (!acc[key]) {
                   acc[key] = {
                       ...item,
                       amount: item.amount,
-                      price: item.price || 0,  // ✅ 가격 0 방지
+                      price: item.price || 0,  // 가격 0 방지
                   };
               } else {
                 acc[key].amount = item.amount || 1;
@@ -372,17 +372,17 @@ const Hall: React.FC = () => {
       });
       // Redux에서 해당 테이블 메시지 clear
       dispatch(clearMessages(contextMenu.tableNo));
-      console.log(`✅ 테이블 ${contextMenu.tableNo} 메시지 비우기 완료!`);
+      console.log(`테이블 ${contextMenu.tableNo} 메시지 비우기 완료!`);
     } catch (error) {
-      console.error("🚨 채팅 내역 삭제 중 오류 발생:", error);
+      console.error("채팅 내역 삭제 중 오류 발생:", error);
     }
 
     // 주문내역 삭제 요청
     try {
-      // ✅ 백엔드 API 호출 (STATUS='N'으로 변경하는 엔드포인트)
+      // 백엔드 API 호출 (STATUS='N'으로 변경하는 엔드포인트)
       console.log(`${contextMenu.tableNo}`);
       const response = await fetch(`http://localhost:8080/honki/api/orders/clear/${contextMenu.tableNo}`, {
-          method: "PUT", // ✅ 소프트 삭제를 위해 PUT 방식 사용
+          method: "PUT", // 소프트 삭제를 위해 PUT 방식 사용
           headers: { "Content-Type": "application/json" },
       });
 
@@ -390,13 +390,13 @@ const Hall: React.FC = () => {
           throw new Error("서버에서 주문 삭제를 실패했습니다.");
       }
 
-      console.log(`✅ 테이블 ${contextMenu.tableNo}의 주문 내역 삭제 완료`);
+      console.log(`테이블 ${contextMenu.tableNo}의 주문 내역 삭제 완료`);
 
-      // ✅ UI에서 해당 테이블의 주문 내역 삭제
+      // UI에서 해당 테이블의 주문 내역 삭제
       setTables((prevTables) =>
           prevTables.map((t) =>
               t.tableNo === contextMenu.tableNo
-                  ? { ...t, items: [], totalAmount: "0원" } // ✅ UI 업데이트
+                  ? { ...t, items: [], totalAmount: "0원" } // UI 업데이트
                   : t
           )
       );
@@ -428,7 +428,7 @@ const Hall: React.FC = () => {
         body: JSON.stringify(newMessage),
       });
     } else {
-      console.error("🚨 WebSocket 연결이 되어있지 않습니다!");
+      console.error("WebSocket 연결이 되어있지 않습니다!");
     }
   };
 
@@ -455,7 +455,7 @@ const Hall: React.FC = () => {
         <div className="table-layout" onClick={() => setContextMenu(null)}>
           {tables.map((table) => (
         <Table 
-            key={table?.tableNo}             // ✅ Optional Chaining 사용
+            key={table?.tableNo}             // Optional Chaining 사용
             {...table}
             onRightClick={handleRightClick} 
             onChatClick={handleChatClick} 
