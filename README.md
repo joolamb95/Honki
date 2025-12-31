@@ -52,32 +52,52 @@ Frontend는 **React + TypeScript + Python**, Backend는 **Spring Boot + MyBatis*
 
 ## 📂 **프로젝트 구조 (Multi-Server Architecture)**
 
-Spring Boot + React 기반 분리형 구조:
+### 1) 시스템 전체 서비스 구조:
 ```angular2html
 [ 손님 Front (kiosk-project-user) ]
-        │
-        │ ① 주문 / 조회 / 채팅 / 결제 API
-        │
-        ▼
-[ Honki Backend (Spring) ] ───────▶ [ Oracle DB ]
-        ▲        │
-        │        │ ② 주문 / 채팅 / 결제 데이터 송출
-        │        ▼
+  ├─ REST API (주문/조회/결제/테이블상태 등)
+  ├─ WebSocket (사장님과 실시간 채팅)
+  └─ AI 요청 (추천/미니게임)
+       ├─ (직접) AI Server (LangChain / GPT)
+       └─ (선택) Honki Backend를 통해 백엔드 데이터 기반 추천
+
+                ▼
+
+[ Honki Backend (Spring) ]  ───────────▶  [ Oracle DB ]
+  ├─ REST Controller (HTTP API)
+  ├─ WebSocket Endpoint (채팅/실시간 이벤트)
+  ├─ Service (비즈니스 로직)
+  ├─ DAO / Mapper (MyBatis)
+  └─ 주문/테이블상태/결제 데이터 관리
+
+                ▲
+                │ REST API
 [ 사장님 Front (kiosk-project-admin) ]
-
-──────────────────────────────────────────
-
-[ 손님 Front ]
-        │
-        │ ③ AI 요청 (추천 / 미니게임)
-        ▼
-[ AI Server (LangChain / GPT) ]
-        ▲
-        │ ④ (선택) 백엔드 데이터 기반 추천
-[ Honki Backend ]
+  ├─ 주문 현황/테이블 상태 모니터링
+  ├─ 생산/재고/인사/정산 관리
+  └─ WebSocket (손님과 실시간 채팅)
 
 ```
 
+### 2) 백엔드 내부 처리 흐름 (Spring 계층구조)
+
+```angular2html
+(HTTP 요청)
+손님/사장님 Front
+   ↓
+Controller (REST / WebSocket)
+   ↓
+Service (비즈니스 로직)
+   ↓
+DAO
+   ↓
+MyBatis Mapper (SQL)
+   ↓
+Oracle DB
+   ↓
+(응답 JSON / 이벤트)
+Front로 전달
+```
 
 - **Controller** : REST API, WebSocket 엔드포인트
 - **Service** : 손님/사장님 비즈니스 로직
@@ -341,4 +361,5 @@ http://localhost:8080
 ## 🤔💭 **프로젝트 회고**
 
 (추후 업로드 예정)
+
 
