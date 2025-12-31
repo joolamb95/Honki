@@ -7,6 +7,14 @@
 Frontend는 **React + TypeScript + Python**, Backend는 **Spring Boot + MyBatis**, DB는 **Oracle DB**, 결제는 **TossPayments API**, 실시간 통신은 **WebSocket**기반으로 설계되었습니다.
 
 ---
+## 🧩 **서비스 구성 (Services)**
+총 4개 서비스로 구성됩니다.
+1. Backend API Server: Honki
+2. Frontend (손님용): kiosk-project-user
+3. Frontend (사장님용): kiosk-project-admin
+4. AI Server (LangChain): LangChainProject (Python)
+
+---
 
 ## 🔧 **기술 스택 (Tech Stack)**
 
@@ -46,17 +54,28 @@ Frontend는 **React + TypeScript + Python**, Backend는 **Spring Boot + MyBatis*
 
 Spring Boot + React 기반 분리형 구조:
 ```angular2html
-[ kiosk-project-user ]    → 손님용 테이블오더 (React)
-        ↓ REST / WebSocket
-[ kiosk-project-admin ]   → 사장님용 관리자 페이지 (React)
-        ↓ REST / WebSocket
-[ Honki Backend ]         → 공통 백엔드 API 서버 (Spring Boot)
-        ↓
-[ Oracle DB ]
+[ 손님 Front (kiosk-project-user) ]
+        │
+        │ ① 주문 / 조회 / 채팅 / 결제 API
+        │
+        ▼
+[ Honki Backend (Spring) ] ───────▶ [ Oracle DB ]
+        ▲        │
+        │        │ ② 주문 / 채팅 / 결제 데이터 송출
+        │        ▼
+[ 사장님 Front (kiosk-project-admin) ]
 
-[ LangChainProject ]      → AI 메뉴 추천 및 미니게임 서버 (Python)
-        ↑
-     OpenAI API\
+──────────────────────────────────────────
+
+[ 손님 Front ]
+        │
+        │ ③ AI 요청 (추천 / 미니게임)
+        ▼
+[ AI Server (LangChain / GPT) ]
+        ▲
+        │ ④ (선택) 백엔드 데이터 기반 추천
+[ Honki Backend ]
+
 ```
 
 
@@ -109,42 +128,78 @@ finance
 
 src/main/resources
  ├ mapper                ★ MyBatis XML
+ │   ├ category
  │   ├ finance
+ │   ├ hr
+ │   ├ menu
+ │   ├ option
  │   ├ order
- │   └ payment
+ │   ├ ordersdetail
+ │   ├ payment
+ │   ├ production
+ │   ├ res
+ │   └ stock
  ├ application.yml
  └ mybatis-config.xml
 ```
 
 🎨 Frontend (React) --- 사장님
 ```angular2html
-src
- ├ api                   ★ Axios API 모듈
- ├ components            ★ 공통 컴포넌트
- ├ pages
- │   ├ Hall.tsx           ★ 테이블/주문 관리
- │   ├ Dashboard.tsx      ★ 매출 대시보드
- │   ├ SalesAnalysis.tsx  ★ 매출 분석
- │   └ ExpendManagement.tsx ★ 지출 관리
- ├ store                 ★ Redux Toolkit
- ├ styles
- └ utils
+kiosk-project-admin
+src/
+├ assets
+├ components               ★ 공용 컴포넌트 및 개별모달
+│  ├ ChatModal.tsx
+│  ├ ExpenseModal.tsx
+│  ├ Header.tsx
+│  ├ Pagination.tsx        ★ 페이징 처리
+│  ├ Sidebar.tsx
+│  └ TableDetailModal.tsx
+├ pages
+│  ├ employeePage          ★ 인사관리
+│  ├ Finance               ★ 재무관리
+│  ├ ProductionPage        ★ 생산관리
+│  ├ StockPage             ★ 재고관리
+│  └ Hall.tsx              ★ 포스기 화면
+├ slice                    ★ Redux Toolkit
+├ style                    ★ css
+├ App.tsx
+├ main.tsx
+├ Store.ts                 ★ Redux Toolkit
+ └ WebSocketContext.tsx
+
 
 ```
 
 🎨 Frontend (React) --- 손님
 ```angular2html
-src
- ├ api                   ★ Axios API 모듈
- ├ components            ★ 공통 컴포넌트
- ├ pages
- │   ├ Hall.tsx           ★ 테이블/주문 관리
- │   ├ Dashboard.tsx      ★ 매출 대시보드
- │   ├ SalesAnalysis.tsx  ★ 매출 분석
- │   └ ExpendManagement.tsx ★ 지출 관리
- ├ store                 ★ Redux Toolkit
- ├ styles
- └ utils
+kiosk-project-user
+src/
+├─ assets
+├─ component/
+│  ├─ AIModal.tsx
+│  ├─ bell.tsx
+│  ├─ Cart.tsx
+│  ├─ ChatComponent.tsx
+│  ├─ ChatModal.tsx
+│  ├─ ChatRoom.tsx
+│  ├─ DrinkingGame.tsx
+│  ├─ Fail.tsx
+│  ├─ FailModal.tsx
+│  ├─ GameSelected.tsx
+│  ├─ MainPage.tsx
+│  ├─ MenuDetail.tsx
+│  ├─ Menus.tsx
+│  ├─ Orders.tsx
+│  ├─ Quizs.tsx                ★ 미니게임(상식퀴즈)
+│  ├─ Sidebar.tsx
+│  ├─ SoldOutModal.tsx
+│  ├─ TableManager.tsx
+│  └─ VirtualKeyboard.tsx       ★ 채팅용 가상키보드
+├─ features/                    ★ Redux Toolkit
+├─ resource/                    ★ css
+└─ type/                        ★ 타입 정의
+
 
 ```
 
@@ -152,30 +207,68 @@ src
 ---
 
 ## 📌 **주요 기능 (Key Features)**
-### 🍻 주문 & 운영
+
+### 🙋 손님(TableOrder)
+- 메뉴/카테고리 조회, 주문/장바구니
+- 호출(벨)
+- 사장님과 실시간 채팅(WebSocket)
+- AI 메뉴 추천 / 미니게임(GPT 기반)
+- 결제시 TossPayments API 연동
+
+
+### 👑 사장님(POS/Admin)
+
+#### 🍻 주문 & 운영 (Order & Chatting)
 - 테이블별 주문 관리
 - 실시간 주문 상태 반영
-- WebSocket 기반 채팅 (홀 ↔ 사장님)
+- WebSocket 기반 채팅 (손님 ↔ 사장님)
 
-### 💳 결제
-- TossPayments API 연동
+#### 👥 인사관리 (HR)
+- 직원 등록 / 수정 / 삭제
+- 출퇴근 관리 (근태 관리)
+- 급여 관리 (근무 시간 기반 급여 산정)
+
+#### 🏭 생산관리 (Production)
+- 메뉴 추가 / 변경 / 삭제
+- 메뉴별 옵션 추가 / 변경 / 삭제
+- 생산 단위 관리 (메뉴 구성 및 관리)
+- 재고와 연계된 생산 로직 관리
+
+#### 📦 재고관리 (Stock)
+- 재료 주문 관리
+- 재고 입·출고 내역 관리
+- 음식 주문에 따른 재고 자동 차감
+- 재고 현황 모니터링
+
+#### 💳 결제 (Payment)
 - 결제 정보 DB 저장
 - 결제 기준 매출 집계
 
-### 📊 매출 & 재무 관리
+#### 📊 매출 & 재무 관리 (Finance)
 - 일(Daily)/주(Weekly)/월(Monthly) 매출 통계
 - 시간대별(AM/PM)·요일별 매출 분석
 - 지출 관리 (Expend Management)
 - 차트 기반 시각화 (Recharts)
 
+
+### 🤖 AI 서버
+- 백엔드 데이터를 활용한 메뉴 추천
+- GPT 기반 상식퀴즈 객관식
+
+--- 
+
 ## 🖼️ **화면 설계서 (UI Design)**
 👉 Figma 화면 설계 링크:  
 **[🎨 피그마 링크]**
+
 (추후 업로드 예정)
+
 ---
 
 ## 🗺️ **ERD (Database Schema)**
+
 (추후 업로드 예정)
+
 ---
 
 
@@ -240,9 +333,12 @@ http://localhost:8080
 ---
 
 ## 📝 **시연 스크린샷**
+
 (추후 업로드 예정)
 
 ---
 
 ## 🤔💭 **프로젝트 회고**
+
 (추후 업로드 예정)
+
