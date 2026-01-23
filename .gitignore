@@ -1,2 +1,11 @@
 /.metadata/
 .env
+# Python virtual env
+venv/
+.venv/
+**/venv/
+**/.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
