@@ -9,3 +9,9 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+# IntelliJ
+.idea/
+*.iml
+out/
+node_modules/
+**/node_modules/
