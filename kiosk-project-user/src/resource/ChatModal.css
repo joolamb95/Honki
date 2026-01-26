@@ -132,7 +132,7 @@
 /* ✅ 채팅 모달 제목 스타일 수정 */
 .chat-modal-content h2 {
     color: white; /* ✅ 글자색을 흰색으로 설정 */
-    background-color: #333; /* ✅ 배경색 추가 */
+    background-color: #333 !important; /* ✅ 배경색 추가 */
     padding: 10px;
     text-align: center;
     font-size: 1.5rem;
@@ -163,7 +163,7 @@
 /* ✅ Send 버튼 스타일 */
 .chat-send-button {
     background-color: #007bff;
-    color: white;
+    color: white !important;
     border: none;
     padding: 8px 16px;
     cursor: pointer;

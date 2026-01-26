@@ -23,7 +23,7 @@ const GameSelectionModal = ({ onClose }: { onClose?: () => void }) => {
             <h2>🎮 게임 선택</h2>
             <p>어떤 게임을 하시겠습니까?</p>
 
-            <div className="game-buttons">
+            <div className="game-buttons" style={{display:"flex", justifyContent:"space-evenly" }}>
               <button className="game-button" onClick={() => handleGameSelection("drinking")}>
                 🍻 술게임
               </button>
