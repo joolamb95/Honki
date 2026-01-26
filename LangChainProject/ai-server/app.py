@@ -6,9 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
 
 
 load_dotenv(dotenv_path=".env")
@@ -33,7 +32,7 @@ app.add_middleware(
 )
 
 
-chat = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model_name="gpt-4", temperature=0.7)
+chat = ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4o-mini", temperature=0.7)
 
 
 class RecommendationRequest(BaseModel):
@@ -56,12 +55,16 @@ Provide only a comma-separated list of dish names (no extra text)."""
 
         user_prompt = f"Given the dish '{data.last_item}', recommend 3 or 4 matching dishes."
 
-        prompt_template = PromptTemplate(
+        prompt = PromptTemplate.from_template(
             template=f"{system_prompt}\n\nUser: {user_prompt}\nAssistant:",
             input_variables=["all_menus"]
         )
-        chain = LLMChain(llm=chat, prompt=prompt_template)
-        result = await chain.arun(all_menus=', '.join(data.all_menus))
+        chain = prompt | chat
+        resp = chain.invoke({
+            "system": system_prompt,
+            "user": user_prompt
+        })
+        result = resp.content
 
         recommended_menus = [menu.strip() for menu in result.split(",") if menu.strip()]
         return {"recommended_menus": recommended_menus[:4]}

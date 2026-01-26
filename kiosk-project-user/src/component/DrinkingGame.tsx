@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "../resource/DrinkGame.css";
 
-const API_URL = "http://192.168.30.192:5001/random-drinking-game";
+// const API_URL = "http://192.168.30.192:5001/random-drinking-game";
+const AI_BASE = import.meta.env.VITE_AI_BASE_URL;
+const API_URL = `${AI_BASE}/random-drinking-game`;
 
 const DrinkingGame = ({ onClose }: { onClose?: () => void }) => {
   const [playerCount, setPlayerCount] = useState<number>(4);
