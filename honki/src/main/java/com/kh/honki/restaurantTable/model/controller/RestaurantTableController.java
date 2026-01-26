@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/restaurant-table")
-@CrossOrigin(origins = "http://localhost:5173") 
 public class RestaurantTableController {
     @Autowired
     private RestaurantTableService resService;
@@ -40,7 +39,7 @@ public class RestaurantTableController {
     	List<RestaurantTable> tables = resService.getAllTables();
     	
     	if(tables.isEmpty()) {
-    		return ResponseEntity.notFound().build();
+    		return ResponseEntity.noContent().build();
     	}
     	
     	Random random = new Random();

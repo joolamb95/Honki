@@ -11,8 +11,14 @@ const MainPage = () => {
 
   const handleRandomTableSelect = async () => {
     setLoading(true);
+    console.log("apiBaseUrl =", apiBaseUrl);
+
     try {
       const response = await fetch(`${apiBaseUrl}/honki/restaurant-table/random`);
+      if (response.status === 204) {
+        alert("현재 사용 가능한 테이블이 없습니다. (DB 데이터 없음)");
+        return;
+      }
       const data = await response.json();
       console.log("응답 받은 테이블:", data); 
       if (response.ok) {

@@ -18,18 +18,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
       registry.addEndpoint("/ws/owner") // 사장님용 WebSocket
-      		  .setAllowedOrigins("http://localhost:5173","http://192.168.30.192:5173")
-              .setAllowedOriginPatterns("*")
+              .setAllowedOriginPatterns("http://localhost:5173", "http://192.168.*.*:5173")
               .withSockJS();
 
       registry.addEndpoint("/ws/customer") // 손님용 WebSocket
-      		  .setAllowedOrigins("http://localhost:5173","http://192.168.30.192:5173")
-              .setAllowedOriginPatterns("*")
+              .setAllowedOriginPatterns("http://localhost:5173", "http://192.168.*.*:5173")
               .withSockJS();
       
-      registry.addEndpoint("/stompServer") // ✅ WebSocket 엔드포인트 추가
-      .setAllowedOriginPatterns("*")
-      .withSockJS();
+      registry.addEndpoint("/stompServer") // WebSocket 엔드포인트 추가
+              .setAllowedOriginPatterns("http://localhost:5173", "http://192.168.*.*:5173")
+              .withSockJS();
   }
 
 }

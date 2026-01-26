@@ -13,8 +13,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // ✅ 프론트엔드 주소만 허용
-                        .allowedOrigins("http://192.168.30.192:5173") // ✅ 프론트엔드 주소만 허용
+                        .allowedOriginPatterns(
+                                "http://localhost:5173",
+                                "http://192.168.*.*:5173"
+                        ) // 로컬환경 변화에 대응
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
