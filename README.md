@@ -287,7 +287,7 @@ https://www.figma.com/design/sGZPnLGQPCKnoT8HpQW3iR/%ED%98%BC%EB%8F%88%EC%9D%98-
 
 ## 🗺️ **ERD (Database Schema)**
 
-(추후 업로드 예정)
+<img width="4260" height="2382" alt="테이블오더" src="https://github.com/user-attachments/assets/3a0e73ce-cf2c-4364-962f-21607e8f0ca0" />
 
 ---
 
