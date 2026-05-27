@@ -281,7 +281,7 @@ src/
 👉 Figma 화면 설계 링크:  
 **[🎨 피그마 링크]**
 
-(추후 업로드 예정)
+https://www.figma.com/design/sGZPnLGQPCKnoT8HpQW3iR/%ED%98%BC%EB%8F%88%EC%9D%98-%ED%82%A4%EC%98%A4%EC%8A%A4%ED%81%AC?node-id=8-300&p=f&t=aHbD9LFocLZ8jTRm-0
 
 ---
 
